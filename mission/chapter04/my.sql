@@ -38,6 +38,7 @@ DROP TABLE IF EXISTS `store`;
 CREATE TABLE `store` (
                          `id`	BIGINT	NOT NULL,
                          `user_id`	BIGINT	NOT NULL	COMMENT '비식별관계 - 사장님이 바뀔 수 있음',
+                         `location_id`	BIGINT	NOT NULL,
                          `name`	VARCHAR(20)	NOT NULL,
                          `open_at`	TIME	NOT NULL,
                          `closed_at`	TIME	NOT NULL,
@@ -285,6 +286,13 @@ ALTER TABLE `store` ADD CONSTRAINT `FK_user_TO_store_1` FOREIGN KEY (
     )
     REFERENCES `user` (
                        `id`
+        );
+
+ALTER TABLE `store` ADD CONSTRAINT `FK_location_TO_store_1` FOREIGN KEY (
+                                                                         `location_id`
+    )
+    REFERENCES `location` (
+                           `id`
         );
 
 ALTER TABLE `store_category` ADD CONSTRAINT `FK_food_category_TO_store_category_1` FOREIGN KEY (
