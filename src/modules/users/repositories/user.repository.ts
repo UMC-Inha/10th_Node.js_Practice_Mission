@@ -7,9 +7,7 @@ import { UserSignUpResponse } from '../dtos/UserSignUpResponse.dto';
 
 @singleton()
 export class UserRepository implements UserRepositoryInterface {
-  // 1. 사용자 추가
   public async addUser(data: UserSignUpRequest): Promise<number> {
-    const conn = await pool.getConnection();
     try {
       const [result] = await pool.query<ResultSetHeader>(
         `INSERT INTO user (email, name, gender, birth, address, detail_address, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?);`,
@@ -31,15 +29,10 @@ export class UserRepository implements UserRepositoryInterface {
       return result.insertId;
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 
-  // 2. 사용자 정보 얻기
   public async getUser(userId: number): Promise<any | null> {
-    const conn = await pool.getConnection();
-
     try {
       const [user] = await pool.query<RowDataPacket[]>(
         `SELECT * FROM user WHERE id = ?;`,
@@ -53,18 +46,13 @@ export class UserRepository implements UserRepositoryInterface {
       return user[0];
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 
-  // 3. 음식 선호 카테고리 매핑
   public async setPreference(
     userId: number,
     foodCategoryId: number
   ): Promise<void> {
-    const conn = await pool.getConnection();
-
     try {
       await pool.query(
         `INSERT INTO user_favor_category (food_category_id, user_id) VALUES (?, ?);`,
@@ -72,15 +60,10 @@ export class UserRepository implements UserRepositoryInterface {
       );
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 
-  // 4. 사용자 선호 카테고리 반환
   public async getUserPreferencesByUserId(userId: number): Promise<any[]> {
-    const conn = await pool.getConnection();
-
     try {
       const [preferences] = await pool.query<RowDataPacket[]>(
         'SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name ' +
@@ -92,8 +75,6 @@ export class UserRepository implements UserRepositoryInterface {
       return preferences as any[];
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 }

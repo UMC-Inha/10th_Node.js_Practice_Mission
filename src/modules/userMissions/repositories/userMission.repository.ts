@@ -14,33 +14,29 @@ interface UserMissionExistsRow extends RowDataPacket {
 export class UserMissionRepository implements UserMissionRepositoryInterface {
   public async existsInProgress(
     userId: number,
-    missionId: number,
+    missionId: number
   ): Promise<boolean> {
-    const conn = await pool.getConnection();
     try {
       const [rows] = await pool.query<UserMissionExistsRow[]>(
         `SELECT 1 AS exists_flag FROM user_mission
          WHERE user_id = ? AND mission_id = ? AND status = 'PROGRESS' AND deleted_at IS NULL
          LIMIT 1;`,
-        [userId, missionId],
+        [userId, missionId]
       );
       return rows.length > 0;
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 
   public async createUserMission(
-    params: CreateUserMissionParams,
+    params: CreateUserMissionParams
   ): Promise<number> {
-    const conn = await pool.getConnection();
     try {
       const [result] = await pool.query<ResultSetHeader>(
         `INSERT INTO user_mission (created_at, status, mission_id, user_id)
          VALUES (NOW(), 'PROGRESS', ?, ?);`,
-        [params.missionId, params.userId],
+        [params.missionId, params.userId]
       );
 
       if (result.affectedRows === 0) {
@@ -50,8 +46,6 @@ export class UserMissionRepository implements UserMissionRepositoryInterface {
       return result.insertId;
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 }

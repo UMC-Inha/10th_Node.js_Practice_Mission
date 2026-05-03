@@ -9,7 +9,6 @@ import {
 @singleton()
 export class ReviewRepository implements ReviewRepositoryInterface {
   public async createReview(params: CreateReviewParams): Promise<number> {
-    const conn = await pool.getConnection();
     try {
       const [result] = await pool.query<ResultSetHeader>(
         `INSERT INTO review (user_mission_id, content, score, created_at, user_id, store_id)
@@ -20,7 +19,7 @@ export class ReviewRepository implements ReviewRepositoryInterface {
           params.score ?? null,
           params.userId,
           params.storeId,
-        ],
+        ]
       );
 
       if (result.affectedRows === 0) {
@@ -30,8 +29,6 @@ export class ReviewRepository implements ReviewRepositoryInterface {
       return result.insertId;
     } catch (err) {
       throw new Error(`오류가 발생했어요: ${err}`);
-    } finally {
-      conn.release();
     }
   }
 }
