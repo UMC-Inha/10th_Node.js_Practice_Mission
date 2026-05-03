@@ -1,4 +1,5 @@
 import {
+  IsDefined,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -9,12 +10,15 @@ import {
 } from 'class-validator';
 
 export class CreateReviewRequest {
+  @IsDefined()
   @IsInt()
   userId!: number;
 
+  @IsDefined()
   @IsInt()
   userMissionId!: number;
 
+  @IsDefined()
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)

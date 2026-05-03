@@ -1,15 +1,18 @@
-import { IsDate, IsInt, Min } from 'class-validator';
+import { IsDate, IsDefined, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateMissionRequest {
+  @IsDefined()
   @IsInt()
   @Min(0)
   price!: number;
 
+  @IsDefined()
   @IsInt()
   @Min(0)
   point!: number;
 
+  @IsDefined()
   @IsDate()
   @Type(() => Date)
   endAt!: Date;

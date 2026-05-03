@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDate,
   IsNotEmpty,
+  IsDefined,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -12,10 +13,12 @@ export class CreateStoreRequest {
   //   id!: number;
 
   @IsNumber()
+  @IsDefined()
   userId!: number;
 
   @IsString()
   @IsNotEmpty()
+  @IsDefined()
   name!: string;
 
   @IsOptional()
@@ -38,5 +41,6 @@ export class CreateStoreRequest {
 
   // 특정 지역에 가게 추가하기
   @IsNumber()
+  @IsDefined()
   locationId!: number;
 }
