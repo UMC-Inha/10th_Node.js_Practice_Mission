@@ -1,0 +1,307 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model food_category {
+  id                 BigInt               @id
+  name               String?              @db.VarChar(5)
+  store_category     store_category[]
+  user_favorite_food user_favorite_food[]
+}
+
+model image {
+  id          BigInt            @id
+  org_name    String            @db.VarChar(100)
+  stored_name String            @db.VarChar(100)
+  url         String            @db.VarChar(255)
+  order       Int
+  target_type image_target_type
+  target_id   BigInt
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model inquiry {
+  Id               BigInt           @id
+  user_id          BigInt
+  category_id      BigInt
+  title            String           @db.Char(20)
+  content          String           @db.VarChar(255)
+  answer           String?          @db.VarChar(255)
+  created_at       DateTime         @db.DateTime(6)
+  answered_at      DateTime?        @db.DateTime(0)
+  deleted_at       DateTime?        @db.DateTime(0)
+  inquiry_category inquiry_category @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_inquiry_category_TO_inquiry_1")
+  user             user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_inquiry_1")
+
+  @@index([category_id], map: "FK_inquiry_category_TO_inquiry_1")
+  @@index([user_id], map: "FK_user_TO_inquiry_1")
+}
+
+model inquiry_category {
+  id      BigInt    @id
+  name    String    @db.Char(10)
+  inquiry inquiry[]
+}
+
+model location {
+  id            BigInt          @id
+  name          String          @db.Char(10)
+  user_location user_location[] @ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mission {
+  id           BigInt         @id
+  price        Int
+  point        Int
+  end_at       DateTime       @db.DateTime(0)
+  created_at   DateTime       @db.DateTime(0)
+  updated_at   DateTime?      @db.DateTime(0)
+  deleted_at   DateTime?      @db.DateTime(0)
+  store_id     BigInt
+  store        store          @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_store_TO_mission_1")
+  user_mission user_mission[]
+
+  @@index([store_id], map: "FK_store_TO_mission_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notification {
+  id                                  BigInt                 @id
+  note_type                           notification_note_type
+  target_id                           BigInt
+  title                               String                 @db.Char(20)
+  content                             String                 @db.VarChar(255)
+  created_at                          DateTime               @db.DateTime(6)
+  receiver_id                         BigInt
+  sender_id                           BigInt
+  user_notification_receiver_idTouser user                   @relation("notification_receiver_idTouser", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_notification_1")
+  user_notification_sender_idTouser   user                   @relation("notification_sender_idTouser", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_notification_2")
+  notification_read                   notification_read[]
+
+  @@index([receiver_id], map: "FK_user_TO_notification_1")
+  @@index([sender_id], map: "FK_user_TO_notification_2")
+}
+
+model notification_read {
+  id              BigInt       @id
+  read_at         DateTime?    @db.DateTime(6)
+  user_id         BigInt
+  notification_id BigInt
+  notification    notification @relation(fields: [notification_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_notification_TO_notification_read_1")
+  user            user         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_notification_read_1")
+
+  @@index([notification_id], map: "FK_notification_TO_notification_read_1")
+  @@index([user_id], map: "FK_user_TO_notification_read_1")
+}
+
+model point {
+  id          BigInt
+  user_id     BigInt
+  amount      Int
+  source_type point_source_type
+  source_id   BigInt
+  created_at  DateTime          @db.DateTime(6)
+  user        user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_point_1")
+
+  @@id([id, user_id])
+  @@index([user_id], map: "FK_user_TO_point_1")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model review {
+  user_mission_id BigInt
+  content         String       @db.VarChar(100)
+  answer          String?      @db.VarChar(100)
+  score           Int?
+  created_at      DateTime     @db.DateTime(0)
+  answered_at     DateTime?    @db.DateTime(0)
+  deleted_at      DateTime?    @db.DateTime(0)
+  user_id         BigInt
+  store_id        BigInt
+  store           store        @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_store_TO_review_1")
+  user            user         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_review_1")
+  user_mission    user_mission @relation(fields: [user_mission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_mission_TO_review_1")
+
+  @@index([store_id], map: "FK_store_TO_review_1")
+  @@index([user_id], map: "FK_user_TO_review_1")
+  @@index([user_mission_id], map: "FK_user_mission_TO_review_1")
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model store {
+  id             BigInt           @id
+  user_id        BigInt
+  name           String           @db.VarChar(20)
+  open_at        DateTime         @db.Time(0)
+  closed_at      DateTime         @db.Time(0)
+  created_at     DateTime         @db.DateTime(0)
+  deleted_at     DateTime?        @db.DateTime(0)
+  mission        mission[]
+  review         review[]         @ignore
+  user           user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_store_1")
+  store_category store_category[]
+
+  @@index([user_id], map: "FK_user_TO_store_1")
+}
+
+model store_category {
+  category_id   BigInt
+  store_id      BigInt
+  food_category food_category @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_food_category_TO_store_category_1")
+  store         store         @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_store_TO_store_category_1")
+
+  @@id([category_id, store_id])
+  @@index([store_id], map: "FK_store_TO_store_category_1")
+}
+
+model term {
+  id          BigInt          @id
+  title       String          @db.VarChar(20)
+  content     String          @db.Text
+  is_required Int             @db.TinyInt
+  user_type   term_user_type?
+  user_term   user_term[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  id                                          BigInt               @id
+  nickname                                    String               @db.VarChar(10)
+  gender                                      user_gender
+  birth                                       DateTime?            @db.DateTime(0)
+  email                                       String               @db.VarChar(255)
+  social_id                                   String               @db.VarChar(255)
+  social_type                                 user_social_type?
+  phone_number                                String?              @db.Char(11)
+  Is_phone_verified                           Int?                 @db.TinyInt
+  phone_verified_at                           DateTime?            @db.DateTime(0)
+  address_doro                                String?              @db.VarChar(20)
+  address_detail                              String?              @db.VarChar(20)
+  profile_url                                 String?              @db.VarChar(255)
+  role                                        user_role?
+  inquiry_answer_on                           Int                  @default(0) @db.TinyInt
+  review_on                                   Int                  @default(0) @db.TinyInt
+  event_on                                    Int                  @default(0) @db.TinyInt
+  created_at                                  DateTime             @db.DateTime(0)
+  deleted_at                                  DateTime?            @db.DateTime(0)
+  inquiry                                     inquiry[]
+  notification_notification_receiver_idTouser notification[]       @relation("notification_receiver_idTouser")
+  notification_notification_sender_idTouser   notification[]       @relation("notification_sender_idTouser")
+  notification_read                           notification_read[]
+  point                                       point[]
+  review                                      review[]             @ignore
+  store                                       store[]
+  user_favorite_food                          user_favorite_food[]
+  user_location                               user_location[]      @ignore
+  user_mission                                user_mission[]
+  user_term                                   user_term[]
+}
+
+model user_favorite_food {
+  food_category_id BigInt
+  user_id          BigInt
+  food_category    food_category @relation(fields: [food_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_food_category_TO_user_favorite_food_1")
+  user             user          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_user_favorite_food_1")
+
+  @@id([food_category_id, user_id])
+  @@index([user_id], map: "FK_user_TO_user_favorite_food_1")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user_location {
+  location_id BigInt
+  user_id     BigInt
+  selected    Int      @default(0) @db.TinyInt
+  location    location @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_location_TO_user_location_1")
+  user        user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_user_location_1")
+
+  @@index([location_id], map: "FK_location_TO_user_location_1")
+  @@index([user_id], map: "FK_user_TO_user_location_1")
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_mission {
+  id         BigInt              @id
+  created_at DateTime            @db.DateTime(0)
+  status     user_mission_status @default(PROGRESS)
+  updated_at DateTime?           @db.DateTime(0)
+  deleted_at DateTime?           @db.DateTime(0)
+  mission_id BigInt
+  user_id    BigInt
+  review     review[]            @ignore
+  mission    mission             @relation(fields: [mission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_mission_TO_user_mission_1")
+  user       user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_user_mission_1")
+
+  @@index([mission_id], map: "FK_mission_TO_user_mission_1")
+  @@index([user_id], map: "FK_user_TO_user_mission_1")
+}
+
+model user_term {
+  term_id   BigInt
+  user_id   BigInt
+  agree_at  DateTime  @db.DateTime(0)
+  cancel_at DateTime? @db.DateTime(0)
+  term      term      @relation(fields: [term_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_term_TO_user_term_1")
+  user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_user_term_1")
+
+  @@id([term_id, user_id])
+  @@index([user_id], map: "FK_user_TO_user_term_1")
+}
+
+enum notification_note_type {
+  INQUIRY
+  REVIEW
+  EVENT
+  MISSION
+}
+
+enum user_gender {
+  MALE
+  FEMALE
+  NONE
+}
+
+enum user_mission_status {
+  PROGRESS
+  PENDING
+  SUCCESS
+}
+
+enum point_source_type {
+  MISSION_COMPLETE
+  PURCHASE
+  EVENT
+  RETURN
+}
+
+enum term_user_type {
+  USER
+  STORE
+}
+
+enum image_target_type {
+  REVIEW
+  STORE
+  INQUIRY
+}
+
+enum user_social_type {
+  KAKAO
+  NAVER
+  APPLE
+  GOOGLE
+}
+
+enum user_role {
+  ADMIN
+  USER
+  STORE
+}
