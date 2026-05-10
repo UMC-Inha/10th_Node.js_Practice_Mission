@@ -1,80 +1,104 @@
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { singleton } from 'tsyringe';
-import { pool } from '../../../config/db.config';
+import { StatusCodes } from 'http-status-codes';
+import { prisma } from '../../../config/db.config';
+import { Prisma } from '../../../generated/prisma/client.js';
 import { UserRepositoryInterface } from './user.repository.interface';
 import { UserSignUpRequest } from '../dtos/userSignUpRequest.dto';
-import { UserSignUpResponse } from '../dtos/UserSignUpResponse.dto';
+import { AppError } from '../../../common/app-error';
+import { USER_ERROR_CODE } from '../../../common/error-code';
 
 @singleton()
 export class UserRepository implements UserRepositoryInterface {
   public async addUser(data: UserSignUpRequest): Promise<number> {
     try {
-      const [result] = await pool.query<ResultSetHeader>(
-        `INSERT INTO user (email, name, gender, birth, address, detail_address, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?);`,
-        [
-          data.email,
-          data.name,
-          data.gender,
-          data.birth,
-          data.address,
-          data.detailAddress,
-          data.phoneNumber,
-        ]
-      );
+      const created = await prisma.user.create({
+        data: {
+          nickname: data.name,
+          gender: data.gender,
+          birth: data.birth,
+          email: data.email,
+          social_id: data.socialId ?? `local:${data.email}`,
+          phone_number: data.phoneNumber,
+          address_doro: data.address ?? null,
+          address_detail: data.detailAddress ?? null,
+          created_at: new Date(),
+        },
+      });
 
-      if (result.affectedRows === 0) {
-        throw new Error('사용자 추가에 실패했습니다.');
+      return Number(created.id);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new AppError(
+          USER_ERROR_CODE.EMAIL_ALREADY_EXISTS,
+          '이미 존재하는 이메일입니다.',
+          StatusCodes.CONFLICT,
+        );
       }
-
-      return result.insertId;
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
+      throw e;
     }
   }
 
-  public async getUser(userId: number): Promise<any | null> {
-    try {
-      const [user] = await pool.query<RowDataPacket[]>(
-        `SELECT * FROM user WHERE id = ?;`,
-        [userId]
-      );
+  public async getUser(userId: number) {
+    const user = await prisma.user.findFirst({
+      where: { id: BigInt(userId), deleted_at: null },
+    });
 
-      if (user.length === 0) {
-        return null;
-      }
-
-      return user[0];
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
+    if (!user) {
+      return null;
     }
+
+    return {
+      id: Number(user.id),
+      email: user.email,
+      name: user.nickname,
+      gender: user.gender,
+      birth: user.birth,
+      address: user.address_doro ?? '',
+      detailAddress: user.address_detail ?? '',
+      phoneNumber: user.phone_number ?? '',
+    };
   }
 
   public async setPreference(
     userId: number,
-    foodCategoryId: number
+    foodCategoryId: number,
   ): Promise<void> {
     try {
-      await pool.query(
-        `INSERT INTO user_favor_category (food_category_id, user_id) VALUES (?, ?);`,
-        [foodCategoryId, userId]
-      );
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
+      await prisma.user_favorite_food.create({
+        data: {
+          user_id: BigInt(userId),
+          food_category_id: BigInt(foodCategoryId),
+        },
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new AppError(
+          USER_ERROR_CODE.USER_ALREADY_EXISTS,
+          '이미 등록된 선호 음식 카테고리입니다.',
+          StatusCodes.CONFLICT,
+        );
+      }
+      throw e;
     }
   }
 
-  public async getUserPreferencesByUserId(userId: number): Promise<any[]> {
-    try {
-      const [preferences] = await pool.query<RowDataPacket[]>(
-        'SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name ' +
-          'FROM user_favor_category ufc JOIN food_category fcl on ufc.food_category_id = fcl.id ' +
-          'WHERE ufc.user_id = ? ORDER BY ufc.food_category_id ASC;',
-        [userId]
-      );
+  public async getUserPreferencesByUserId(userId: number) {
+    const rows = await prisma.user_favorite_food.findMany({
+      where: { user_id: BigInt(userId) },
+      include: { food_category: true },
+      orderBy: { food_category_id: 'asc' },
+    });
 
-      return preferences as any[];
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
-    }
+    return rows.map((r) => ({
+      food_category_id: Number(r.food_category_id),
+      user_id: Number(r.user_id),
+      name: r.food_category?.name ?? null,
+    }));
   }
 }

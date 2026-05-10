@@ -9,9 +9,6 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateStoreRequest {
-  //   @IsNumber()
-  //   id!: number;
-
   @IsNumber()
   @IsDefined()
   userId!: number;
@@ -22,12 +19,14 @@ export class CreateStoreRequest {
   name!: string;
 
   @IsOptional()
-  @IsString()
-  openAt?: string | null;
+  @IsDate()
+  @Type(() => Date)
+  openAt?: Date;
 
   @IsOptional()
-  @IsString()
-  closedAt?: string | null;
+  @IsDate()
+  @Type(() => Date)
+  closedAt?: Date;
 
   @IsOptional()
   @IsDate()
@@ -39,7 +38,6 @@ export class CreateStoreRequest {
   @Type(() => Date)
   deletedAt?: Date | null;
 
-  // 특정 지역에 가게 추가하기
   @IsNumber()
   @IsDefined()
   locationId!: number;

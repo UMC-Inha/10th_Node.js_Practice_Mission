@@ -23,8 +23,16 @@ export class MissionService {
     storeId: number,
     data: CreateMissionRequest,
   ): Promise<CreateMissionResponse> {
-    // 가게가 존재하는지 검증
     await this.storeService.ensureStoreExists(storeId);
+
+    const endMs = data.endAt.getTime();
+    if (Number.isNaN(endMs) || endMs <= Date.now()) {
+      throw new AppError(
+        MISSION_ERROR_CODE.MISSION_INVALID_END_AT,
+        '미션 종료일(endAt)은 현재 시각보다 이후여야 합니다.',
+        StatusCodes.BAD_REQUEST,
+      );
+    }
 
     const missionId = await this.missionRepository.createMission({
       storeId,

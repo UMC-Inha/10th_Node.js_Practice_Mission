@@ -8,8 +8,11 @@ import {
   IsString,
   ArrayMinSize,
   IsDefined,
+  IsEnum,
+  ArrayUnique,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { user_gender } from '../../../generated/prisma/enums.js';
 
 export class UserSignUpRequest {
   @IsEmail()
@@ -21,10 +24,9 @@ export class UserSignUpRequest {
   @IsDefined()
   name!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsEnum(user_gender)
   @IsDefined()
-  gender!: string;
+  gender!: (typeof user_gender)[keyof typeof user_gender];
 
   @IsDate()
   @Type(() => Date)
@@ -44,8 +46,15 @@ export class UserSignUpRequest {
   @IsDefined()
   phoneNumber!: string;
 
+  /** 로컬 가입 시 생략하면 `local:{email}`로 저장됩니다. */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  socialId?: string;
+
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayUnique()
   @IsInt({ each: true })
   @IsDefined()
   preferences!: number[];
