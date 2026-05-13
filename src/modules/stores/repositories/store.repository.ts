@@ -1,46 +1,41 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
 
-export const addStore = async (data: any): Promise<number> => {
-  const conn = await pool.getConnection();
+interface AddStoreParams {
+  storeName: string;
+  address: string;
+  city: string;
+  district: string;
+  neighborhood: string;
+  detail: string;
+  latitude: number;
+  longitude: number;
+}
 
-  try {
-    const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO store (name, city, district, neighborhood, detail)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        data.name,
-        data.city,
-        data.district,
-        data.neighborhood,
-        data.detail
-      ]
-    );
+// 가게 생성
+export const addStore = async (
+  data: AddStoreParams
+) => {
 
-    return result.insertId;
-  } catch (err) {
-    throw new Error(`가게 생성 오류: ${err}`);
-  } finally {
-    conn.release();
-  }
+  const store = await prisma.store.create({
+    data: {
+      storeName: data.storeName,
+      address: data.address,
+      city: data.city,
+      district: data.district,
+      neighborhood: data.neighborhood,
+      detail: data.detail,
+      latitude: data.latitude,
+      longitude: data.longitude,
+    },
+  });
+
+  return store.storeId;
 };
 
+// 가게 조회
+export const getStoreById = async (storeId: number) => {
 
-export const getStoreById = async (storeId: number): Promise<any | null> => {
-  const conn = await pool.getConnection();
-
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM store WHERE id = ?`,
-      [storeId]
-    );
-
-    if (rows.length === 0) return null;
-
-    return rows[0];
-  } catch (err) {
-    throw new Error(`가게 조회 오류: ${err}`);
-  } finally {
-    conn.release();
-  }
+  return await prisma.store.findUnique({
+    where: { storeId },
+  });
 };

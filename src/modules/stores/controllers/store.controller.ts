@@ -1,26 +1,38 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { createStoreService } from "../services/store.service.js";
+import { ApiResponse } from "../../../utils/api.response.js";
+import { CustomError } from "../../../errors/custom.error.js";
 
-// 1. 가게 생성
+// 가게 생성
 export const createStore = async (req: Request, res: Response) => {
   try {
     const result = await createStoreService(req.body);
 
-    return res.status(StatusCodes.CREATED).json({
-      success: true,
-      code: 201,
-      message: "가게 생성 성공",
-      data: result
-    });
+    return res.status(StatusCodes.CREATED).json(
+      ApiResponse.success(
+        201,
+        "가게 생성 성공",
+        result
+      )
+    );
+  } catch (err) {
 
-  } catch (err: any) {
-    return res.status(400).json({
-      success: false,
-      code: 400,
-      message: err.message || "잘못된 요청입니다.",
-      error: { detail: err.detail || "invalid request" }
-    });
+    if (err instanceof CustomError) {
+      return res.status(err.status).json(
+        ApiResponse.error(
+          err.status,
+          err.message
+        )
+      );
+    }
+
+    return res.status(500).json(
+      ApiResponse.error(
+        500,
+        "서버 내부 오류"
+      )
+    );
   }
 };
 

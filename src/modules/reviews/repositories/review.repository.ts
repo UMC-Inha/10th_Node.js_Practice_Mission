@@ -1,46 +1,67 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
 
-export const addReview = async (data: any): Promise<number> => {
-  const conn = await pool.getConnection();
+interface AddReviewParams {
+  userId: number;
+  storeId: number;
+  userMissionId: number;
+  rating: number;
+  content: string;
+}
 
-  try {
-    const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO review (user_id, store_id, user_mission_id, rating, content)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        data.userId,
-        data.storeId,
-        data.userMissionId,
-        data.rating,
-        data.content
-      ]
-    );
+// 리뷰 생성
+export const addReview = async (
+  data: AddReviewParams
+) => {
 
-    return result.insertId;
-  } finally {
-    conn.release();
-  }
+  const review = await prisma.review.create({
+    data: {
+      userId: data.userId,
+      storeId: data.storeId,
+      userMissionId: data.userMissionId,
+      rating: data.rating,
+      content: data.content,
+    },
+  });
+
+  return review.reviewId;
 };
 
-
+// 중복 체크
 export const checkReview = async (
   userId: number,
   userMissionId: number
 ): Promise<boolean> => {
-  const conn = await pool.getConnection();
 
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT EXISTS(
-        SELECT 1 FROM review 
-        WHERE user_id = ? AND user_mission_id = ?
-      ) as exist`,
-      [userId, userMissionId]
-    );
+  const exist = await prisma.review.findUnique({
+  where: {
+    userId_userMissionId: {
+      userId,
+      userMissionId,
+    },
+  },
+  select: {
+    reviewId: true,
+  },
+});
+  return !!exist;
+};
 
-    return !!rows[0]?.exist;
-  } finally {
-    conn.release();
-  }
+// 사용자가 작성한 리뷰 목록 조회
+export const getReviewsByUserId = async (
+  userId: number
+) => {
+  
+  return await prisma.review.findMany({
+    where: {
+      userId,
+      deletedAt: null,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      store: true,
+      userMission: true,
+    },
+  });
 };

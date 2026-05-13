@@ -1,43 +1,49 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
 
-export const addMission = async (data: any): Promise<number> => {
-  const conn = await pool.getConnection();
+interface AddMissionParams {
+  storeId: number;
+  title: string;
+  description: string;
+  reward: number;
+}
 
-  try {
-    const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO mission (store_id, title, reward)
-       VALUES (?, ?, ?)`,
-      [
-        data.storeId,
-        data.title,
-        data.reward
-      ]
-    );
+// 미션 생성
+export const addMission = async (
+  data: AddMissionParams
+) => {
 
-    return result.insertId;
-  } catch (err) {
-    throw new Error(`미션 생성 오류: ${err}`);
-  } finally {
-    conn.release();
-  }
+  const mission = await prisma.mission.create({
+    data: {
+      storeId: data.storeId,
+      title: data.title,
+      description: data.description,
+      reward: data.reward,
+    },
+  });
+
+  return mission.missionId;
 };
 
-export const getMissionById = async (missionId: number): Promise<any | null> => {
-  const conn = await pool.getConnection();
+// 미션 조회
+export const getMissionById = async (
+  missionId: number
+) => {
 
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM mission WHERE id = ?`,
-      [missionId]
-    );
+  return await prisma.mission.findUnique({
+    where: { missionId },
+  });
+};
 
-    if (rows.length === 0) return null;
-
-    return rows[0];
-  } catch (err) {
-    throw new Error(`미션 조회 오류: ${err}`);
-  } finally {
-    conn.release();
-  }
+// 특정 가게 미션 목록 조회
+export const getMissionsByStoreId = async (
+  storeId: number
+) => {
+  return await prisma.mission.findMany({
+    where: {
+      storeId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
