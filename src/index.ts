@@ -16,6 +16,8 @@ import {
   notFoundHandler,
 } from './middlewares/error.middleware';
 import { responseEnhancer } from './middlewares/response.middleware';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
+app.use(cookieParser());
+app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(responseEnhancer);
 
