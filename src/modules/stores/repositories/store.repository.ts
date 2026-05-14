@@ -1,42 +1,32 @@
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import { pool } from '../../../config/db.config';
+import { singleton } from 'tsyringe';
+import { prisma } from '../../../config/db.config';
 import { CreateStoreRequest } from '../dtos/store.dto';
 import { StoreRepositoryInterface } from './store.repository.interface';
-import { singleton } from 'tsyringe';
 
-interface StoreExistsRow extends RowDataPacket {
-  exists_flag: number;
-}
+const defaultClock = (hour: number, minute = 0, second = 0) =>
+  new Date(1970, 0, 1, hour, minute, second);
 
 @singleton()
 export class StoreRepository implements StoreRepositoryInterface {
   public async createStore(store: CreateStoreRequest): Promise<number> {
-    try {
-      const [result] = await pool.query<ResultSetHeader>(
-        `INSERT INTO store (user_id, location_id, name, open_at, closed_at) VALUES (?, ?, ?, ?, ?);`,
-        [
-          store.userId,
-          store.locationId,
-          store.name,
-          store.openAt,
-          store.closedAt,
-        ]
-      );
-      return result.insertId;
-    } catch (err) {
-      throw new Error(`오류 발생: ${err}`);
-    }
+    const row = await prisma.store.create({
+      data: {
+        user_id: BigInt(store.userId),
+        name: store.name,
+        open_at: store.openAt ?? defaultClock(9, 0, 0),
+        closed_at: store.closedAt ?? defaultClock(22, 0, 0),
+        created_at: store.createdAt ?? new Date(),
+        deleted_at: store.deletedAt ?? null,
+      },
+    });
+    return Number(row.id);
   }
 
   public async existsById(storeId: number): Promise<boolean> {
-    try {
-      const [rows] = await pool.query<StoreExistsRow[]>(
-        `SELECT 1 AS exists_flag FROM store WHERE id = ? AND deleted_at IS NULL LIMIT 1;`,
-        [storeId]
-      );
-      return rows.length > 0;
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
-    }
+    const row = await prisma.store.findFirst({
+      where: { id: BigInt(storeId), deleted_at: null },
+      select: { id: true },
+    });
+    return row !== null;
   }
 }

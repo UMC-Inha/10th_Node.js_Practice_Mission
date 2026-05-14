@@ -1,6 +1,5 @@
-import { ResultSetHeader } from 'mysql2';
 import { singleton } from 'tsyringe';
-import { pool } from '../../../config/db.config';
+import { prisma } from '../../../config/db.config';
 import {
   CreateReviewParams,
   ReviewRepositoryInterface,
@@ -9,26 +8,16 @@ import {
 @singleton()
 export class ReviewRepository implements ReviewRepositoryInterface {
   public async createReview(params: CreateReviewParams): Promise<number> {
-    try {
-      const [result] = await pool.query<ResultSetHeader>(
-        `INSERT INTO review (user_mission_id, content, score, created_at, user_id, store_id)
-         VALUES (?, ?, ?, NOW(), ?, ?);`,
-        [
-          params.userMissionId,
-          params.content,
-          params.score ?? null,
-          params.userId,
-          params.storeId,
-        ]
-      );
-
-      if (result.affectedRows === 0) {
-        throw new Error('리뷰 추가에 실패했습니다.');
-      }
-
-      return result.insertId;
-    } catch (err) {
-      throw new Error(`오류가 발생했어요: ${err}`);
-    }
+    const created = await prisma.review.create({
+      data: {
+        user_mission_id: BigInt(params.userMissionId),
+        content: params.content,
+        score: params.score ?? null,
+        created_at: new Date(),
+        user_id: BigInt(params.userId),
+        store_id: BigInt(params.storeId),
+      },
+    });
+    return Number(created.user_mission_id);
   }
 }

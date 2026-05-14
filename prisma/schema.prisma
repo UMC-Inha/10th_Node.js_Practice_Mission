@@ -8,7 +8,7 @@ datasource db {
 }
 
 model food_category {
-  id                 BigInt               @id
+  id                 BigInt               @id @default(autoincrement())
   name               String?              @db.VarChar(5)
   store_category     store_category[]
   user_favorite_food user_favorite_food[]
@@ -56,7 +56,7 @@ model location {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model mission {
-  id           BigInt         @id
+  id           BigInt         @id @default(autoincrement())
   price        Int
   point        Int
   end_at       DateTime       @db.DateTime(0)
@@ -113,9 +113,9 @@ model point {
   @@index([user_id], map: "FK_user_TO_point_1")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// user_mission_id를 PK로 두면 DB에 PRIMARY KEY가 있어야 합니다.
 model review {
-  user_mission_id BigInt
+  user_mission_id BigInt       @id
   content         String       @db.VarChar(100)
   answer          String?      @db.VarChar(100)
   score           Int?
@@ -130,21 +130,19 @@ model review {
 
   @@index([store_id], map: "FK_store_TO_review_1")
   @@index([user_id], map: "FK_user_TO_review_1")
-  @@index([user_mission_id], map: "FK_user_mission_TO_review_1")
-  @@ignore
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model store {
-  id             BigInt           @id
+  id             BigInt           @id @default(autoincrement())
   user_id        BigInt
   name           String           @db.VarChar(20)
-  open_at        DateTime         @db.Time(0)
-  closed_at      DateTime         @db.Time(0)
+  open_at        DateTime         @db.DateTime(0)
+  closed_at      DateTime         @db.DateTime(0)
   created_at     DateTime         @db.DateTime(0)
   deleted_at     DateTime?        @db.DateTime(0)
   mission        mission[]
-  review         review[]         @ignore
+  review         review[]
   user           user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_store_1")
   store_category store_category[]
 
@@ -172,7 +170,7 @@ model term {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user {
-  id                                          BigInt               @id
+  id                                          BigInt               @id @default(autoincrement())
   nickname                                    String               @db.VarChar(10)
   gender                                      user_gender
   birth                                       DateTime?            @db.DateTime(0)
@@ -196,7 +194,7 @@ model user {
   notification_notification_sender_idTouser   notification[]       @relation("notification_sender_idTouser")
   notification_read                           notification_read[]
   point                                       point[]
-  review                                      review[]             @ignore
+  review                                      review[]
   store                                       store[]
   user_favorite_food                          user_favorite_food[]
   user_location                               user_location[]      @ignore
@@ -229,14 +227,14 @@ model user_location {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_mission {
-  id         BigInt              @id
+  id         BigInt              @id @default(autoincrement())
   created_at DateTime            @db.DateTime(0)
   status     user_mission_status @default(PROGRESS)
   updated_at DateTime?           @db.DateTime(0)
   deleted_at DateTime?           @db.DateTime(0)
   mission_id BigInt
   user_id    BigInt
-  review     review[]            @ignore
+  review     review?
   mission    mission             @relation(fields: [mission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_mission_TO_user_mission_1")
   user       user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_TO_user_mission_1")
 
