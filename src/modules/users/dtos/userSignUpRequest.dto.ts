@@ -29,7 +29,7 @@ export class UserSignUpRequest {
 
   @IsEnum(user_gender)
   @IsDefined()
-  gender!: (typeof user_gender)[keyof typeof user_gender];
+  gender!: user_gender;
 
   @IsDate()
   @Type(() => Date)
