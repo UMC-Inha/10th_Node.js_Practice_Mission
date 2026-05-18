@@ -1,22 +1,29 @@
 import {
   IsDefined,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   Max,
   MaxLength,
   Min,
+  IsInt,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsPositiveBigInt,
+  positiveBigIntTransform,
+} from '../../../common/id-bigint';
 
 export class CreateReviewRequest {
+  @Transform(({ value }) => positiveBigIntTransform(value))
   @IsDefined()
-  @IsInt()
-  userId!: number;
+  @IsPositiveBigInt()
+  userId!: bigint;
 
+  @Transform(({ value }) => positiveBigIntTransform(value))
   @IsDefined()
-  @IsInt()
-  userMissionId!: number;
+  @IsPositiveBigInt()
+  userMissionId!: bigint;
 
   @IsDefined()
   @IsString()
@@ -32,10 +39,10 @@ export class CreateReviewRequest {
 }
 
 export interface CreateReviewResponse {
-  reviewId: number;
-  storeId: number;
-  userId: number;
-  userMissionId: number;
+  reviewId: bigint;
+  storeId: bigint;
+  userId: bigint;
+  userMissionId: bigint;
   content: string;
   score: number | null;
   createdAt: Date;

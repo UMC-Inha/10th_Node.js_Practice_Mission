@@ -15,7 +15,7 @@ export class UserService {
   ) {}
 
   public async userSignUp(data: UserSignUpRequest) {
-    const categoryIds = [...new Set(data.preferences)].map((n) => BigInt(n));
+    const categoryIds = [...new Set(data.preferences)];
     const found = await prisma.food_category.findMany({
       where: { id: { in: categoryIds } },
       select: { id: true },

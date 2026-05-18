@@ -20,7 +20,7 @@ export class MissionService {
   ) {}
 
   public async createMission(
-    storeId: number,
+    storeId: bigint,
     data: CreateMissionRequest,
   ): Promise<CreateMissionResponse> {
     await this.storeService.ensureStoreExists(storeId);
@@ -51,7 +51,7 @@ export class MissionService {
     };
   }
 
-  public async ensureMissionExists(missionId: number): Promise<void> {
+  public async ensureMissionExists(missionId: bigint): Promise<void> {
     const exists = await this.missionRepository.existsById(missionId);
 
     if (!exists) {

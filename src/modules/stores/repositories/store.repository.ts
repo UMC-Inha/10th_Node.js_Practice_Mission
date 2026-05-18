@@ -8,10 +8,10 @@ const defaultClock = (hour: number, minute = 0, second = 0) =>
 
 @singleton()
 export class StoreRepository implements StoreRepositoryInterface {
-  public async createStore(store: CreateStoreRequest): Promise<number> {
+  public async createStore(store: CreateStoreRequest): Promise<bigint> {
     const row = await prisma.store.create({
       data: {
-        user_id: BigInt(store.userId),
+        user_id: store.userId,
         name: store.name,
         open_at: store.openAt ?? defaultClock(9, 0, 0),
         closed_at: store.closedAt ?? defaultClock(22, 0, 0),
@@ -19,12 +19,12 @@ export class StoreRepository implements StoreRepositoryInterface {
         deleted_at: store.deletedAt ?? null,
       },
     });
-    return Number(row.id);
+    return row.id;
   }
 
-  public async existsById(storeId: number): Promise<boolean> {
+  public async existsById(storeId: bigint): Promise<boolean> {
     const row = await prisma.store.findFirst({
-      where: { id: BigInt(storeId), deleted_at: null },
+      where: { id: storeId, deleted_at: null },
       select: { id: true },
     });
     return row !== null;

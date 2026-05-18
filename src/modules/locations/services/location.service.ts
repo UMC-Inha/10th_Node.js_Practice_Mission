@@ -12,7 +12,7 @@ export class LocationService {
     private readonly locationRepository: LocationRepositoryInterface,
   ) {}
 
-  public async getLocationNameById(locationId: number): Promise<string> {
+  public async getLocationNameById(locationId: bigint): Promise<string> {
     const name = await this.locationRepository.findNameById(locationId);
 
     if (name === null) {

@@ -9,7 +9,7 @@ import { USER_ERROR_CODE } from '../../../common/error-code';
 
 @singleton()
 export class UserRepository implements UserRepositoryInterface {
-  public async addUser(data: UserSignUpRequest): Promise<number> {
+  public async addUser(data: UserSignUpRequest): Promise<bigint> {
     try {
       const created = await prisma.user.create({
         data: {
@@ -25,7 +25,7 @@ export class UserRepository implements UserRepositoryInterface {
         },
       });
 
-      return Number(created.id);
+      return created.id;
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
@@ -41,9 +41,9 @@ export class UserRepository implements UserRepositoryInterface {
     }
   }
 
-  public async getUser(userId: number) {
+  public async getUser(userId: bigint) {
     const user = await prisma.user.findFirst({
-      where: { id: BigInt(userId), deleted_at: null },
+      where: { id: userId, deleted_at: null },
     });
 
     if (!user) {
@@ -51,7 +51,7 @@ export class UserRepository implements UserRepositoryInterface {
     }
 
     return {
-      id: Number(user.id),
+      id: user.id,
       email: user.email,
       name: user.nickname,
       gender: user.gender,
@@ -63,14 +63,14 @@ export class UserRepository implements UserRepositoryInterface {
   }
 
   public async setPreference(
-    userId: number,
-    foodCategoryId: number,
+    userId: bigint,
+    foodCategoryId: bigint,
   ): Promise<void> {
     try {
       await prisma.user_favorite_food.create({
         data: {
-          user_id: BigInt(userId),
-          food_category_id: BigInt(foodCategoryId),
+          user_id: userId,
+          food_category_id: foodCategoryId,
         },
       });
     } catch (e) {
@@ -88,16 +88,16 @@ export class UserRepository implements UserRepositoryInterface {
     }
   }
 
-  public async getUserPreferencesByUserId(userId: number) {
+  public async getUserPreferencesByUserId(userId: bigint) {
     const rows = await prisma.user_favorite_food.findMany({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: userId },
       include: { food_category: true },
       orderBy: { food_category_id: 'asc' },
     });
 
     return rows.map((r) => ({
-      food_category_id: Number(r.food_category_id),
-      user_id: Number(r.user_id),
+      food_category_id: r.food_category_id,
+      user_id: r.user_id,
       name: r.food_category?.name ?? null,
     }));
   }

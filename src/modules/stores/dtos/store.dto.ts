@@ -1,17 +1,21 @@
 import {
-  IsNumber,
   IsString,
   IsOptional,
   IsDate,
   IsNotEmpty,
   IsDefined,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+import {
+  IsPositiveBigInt,
+  positiveBigIntTransform,
+} from '../../../common/id-bigint';
 
 export class CreateStoreRequest {
-  @IsNumber()
+  @Transform(({ value }) => positiveBigIntTransform(value))
   @IsDefined()
-  userId!: number;
+  @IsPositiveBigInt()
+  userId!: bigint;
 
   @IsString()
   @IsNotEmpty()
@@ -38,7 +42,8 @@ export class CreateStoreRequest {
   @Type(() => Date)
   deletedAt?: Date | null;
 
-  @IsNumber()
+  @Transform(({ value }) => positiveBigIntTransform(value))
   @IsDefined()
-  locationId!: number;
+  @IsPositiveBigInt()
+  locationId!: bigint;
 }

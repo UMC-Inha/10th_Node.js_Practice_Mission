@@ -17,8 +17,8 @@ export class UserMissionService {
   ) {}
 
   public async challengeMission(
-    userId: number,
-    missionId: number,
+    userId: bigint,
+    missionId: bigint,
   ): Promise<ChallengeMissionResponse> {
     // 미션이 존재하는지 검증
     await this.missionService.ensureMissionExists(missionId);

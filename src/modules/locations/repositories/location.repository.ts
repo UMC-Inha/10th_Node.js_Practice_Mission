@@ -4,9 +4,9 @@ import { LocationRepositoryInterface } from './location.repository.interface';
 
 @singleton()
 export class LocationRepository implements LocationRepositoryInterface {
-  public async findNameById(locationId: number): Promise<string | null> {
+  public async findNameById(locationId: bigint): Promise<string | null> {
     const row = await prisma.location.findUnique({
-      where: { id: BigInt(locationId) },
+      where: { id: locationId },
       select: { name: true },
     });
     return row?.name ?? null;

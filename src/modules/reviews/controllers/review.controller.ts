@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { inject, injectable } from 'tsyringe';
 import { ReviewService } from '../services/review.service';
-import { AppError } from '../../../common/app-error';
 import { STORE_ERROR_CODE } from '../../../common/error-code';
+import { routeParamToPositiveBigInt } from '../../../common/id-string';
 
 @injectable()
 export class ReviewController {
@@ -12,15 +12,11 @@ export class ReviewController {
   ) {}
 
   public handleCreateReviewForStore = async (req: Request, res: Response) => {
-    const storeId = Number(req.params.storeId);
-
-    if (!Number.isInteger(storeId) || storeId <= 0) {
-      throw new AppError(
-        STORE_ERROR_CODE.STORE_NOT_FOUND,
-        `유효하지 않은 가게 id 입니다. (id: ${req.params.storeId})`,
-        StatusCodes.BAD_REQUEST,
-      );
-    }
+    const storeId = routeParamToPositiveBigInt(
+      req.params.storeId,
+      STORE_ERROR_CODE.STORE_NOT_FOUND,
+      '유효하지 않은 가게 id 입니다.',
+    );
 
     const review = await this.reviewService.createReview(storeId, req.body);
     res.success(review, StatusCodes.CREATED);

@@ -7,22 +7,22 @@ import {
 
 @singleton()
 export class MissionRepository implements MissionRepositoryInterface {
-  public async createMission(params: CreateMissionParams): Promise<number> {
+  public async createMission(params: CreateMissionParams): Promise<bigint> {
     const row = await prisma.mission.create({
       data: {
         price: params.price,
         point: params.point,
         end_at: params.endAt,
         created_at: new Date(),
-        store_id: BigInt(params.storeId),
+        store_id: params.storeId,
       },
     });
-    return Number(row.id);
+    return row.id;
   }
 
-  public async existsById(missionId: number): Promise<boolean> {
+  public async existsById(missionId: bigint): Promise<boolean> {
     const row = await prisma.mission.findFirst({
-      where: { id: BigInt(missionId), deleted_at: null },
+      where: { id: missionId, deleted_at: null },
       select: { id: true },
     });
     return row !== null;

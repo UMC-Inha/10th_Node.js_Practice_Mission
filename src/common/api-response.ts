@@ -27,6 +27,12 @@ export const successResponse = <T>(data: T): ApiSuccessResponse<T> => ({
   error: null,
 });
 
+/** Express `JSON.stringify`는 bigint를 처리하지 않으므로 응답 직렬화용 */
+export const jsonStringifyApi = (payload: unknown): string =>
+  JSON.stringify(payload, (_key, value) =>
+    typeof value === 'bigint' ? value.toString() : value,
+  );
+
 export const errorResponse = (
   errorCode: string,
   message: string,

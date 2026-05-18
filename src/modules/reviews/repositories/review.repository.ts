@@ -7,17 +7,17 @@ import {
 
 @singleton()
 export class ReviewRepository implements ReviewRepositoryInterface {
-  public async createReview(params: CreateReviewParams): Promise<number> {
+  public async createReview(params: CreateReviewParams): Promise<bigint> {
     const created = await prisma.review.create({
       data: {
-        user_mission_id: BigInt(params.userMissionId),
+        user_mission_id: params.userMissionId,
         content: params.content,
         score: params.score ?? null,
         created_at: new Date(),
-        user_id: BigInt(params.userId),
-        store_id: BigInt(params.storeId),
+        user_id: params.userId,
+        store_id: params.storeId,
       },
     });
-    return Number(created.user_mission_id);
+    return created.user_mission_id;
   }
 }

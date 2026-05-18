@@ -1,3 +1,3 @@
 export abstract class LocationRepositoryInterface {
-  abstract findNameById(locationId: number): Promise<string | null>;
+  abstract findNameById(locationId: bigint): Promise<string | null>;
 }

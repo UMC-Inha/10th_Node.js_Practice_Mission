@@ -2,7 +2,7 @@ import 'express';
 import { ApiSuccessResponse } from '../common/api-response';
 
 export interface AuthenticatedUser {
-  id: number;
+  id: bigint;
 }
 
 declare global {
