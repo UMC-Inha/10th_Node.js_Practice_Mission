@@ -1,7 +1,7 @@
 import { UserSignUpRequest } from '../dtos/userSignUpRequest.dto';
 
 export type UserProfile = {
-  id: number;
+  id: bigint;
   email: string;
   name: string;
   gender: string;
@@ -12,19 +12,19 @@ export type UserProfile = {
 };
 
 export type UserPreferenceRow = {
-  food_category_id: number;
-  user_id: number;
+  food_category_id: bigint;
+  user_id: bigint;
   name: string | null;
 };
 
 export abstract class UserRepositoryInterface {
-  abstract addUser(data: UserSignUpRequest): Promise<number>;
-  abstract getUser(userId: number): Promise<UserProfile | null>;
+  abstract addUser(data: UserSignUpRequest): Promise<bigint>;
+  abstract getUser(userId: bigint): Promise<UserProfile | null>;
   abstract setPreference(
-    userId: number,
-    foodCategoryId: number,
+    userId: bigint,
+    foodCategoryId: bigint,
   ): Promise<void>;
   abstract getUserPreferencesByUserId(
-    userId: number,
+    userId: bigint,
   ): Promise<UserPreferenceRow[]>;
 }

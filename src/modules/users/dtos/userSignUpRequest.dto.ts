@@ -2,7 +2,6 @@ import {
   IsArray,
   IsDate,
   IsEmail,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -11,8 +10,12 @@ import {
   IsEnum,
   ArrayUnique,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { user_gender } from '../../../generated/prisma/enums.js';
+import {
+  IsPositiveBigInt,
+  positiveBigIntTransform,
+} from '../../../common/id-bigint';
 
 export class UserSignUpRequest {
   @IsEmail()
@@ -52,10 +55,15 @@ export class UserSignUpRequest {
   @IsNotEmpty()
   socialId?: string;
 
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map((v: unknown) => positiveBigIntTransform(v))
+      : value,
+  )
   @IsArray()
   @ArrayMinSize(1)
   @ArrayUnique()
-  @IsInt({ each: true })
+  @IsPositiveBigInt({ each: true })
   @IsDefined()
-  preferences!: number[];
+  preferences!: bigint[];
 }

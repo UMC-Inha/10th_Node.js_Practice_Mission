@@ -19,8 +19,8 @@ export class CreateMissionRequest {
 }
 
 export interface CreateMissionResponse {
-  missionId: number;
-  storeId: number;
+  missionId: bigint;
+  storeId: bigint;
   price: number;
   point: number;
   endAt: Date;

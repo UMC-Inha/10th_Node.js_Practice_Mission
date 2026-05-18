@@ -8,13 +8,13 @@ import {
 @singleton()
 export class UserMissionRepository implements UserMissionRepositoryInterface {
   public async existsInProgress(
-    userId: number,
-    missionId: number,
+    userId: bigint,
+    missionId: bigint,
   ): Promise<boolean> {
     const row = await prisma.user_mission.findFirst({
       where: {
-        user_id: BigInt(userId),
-        mission_id: BigInt(missionId),
+        user_id: userId,
+        mission_id: missionId,
         status: 'PROGRESS',
         deleted_at: null,
       },
@@ -25,30 +25,30 @@ export class UserMissionRepository implements UserMissionRepositoryInterface {
 
   public async createUserMission(
     params: CreateUserMissionParams,
-  ): Promise<number> {
+  ): Promise<bigint> {
     const row = await prisma.user_mission.create({
       data: {
         created_at: new Date(),
         status: 'PROGRESS',
-        mission_id: BigInt(params.missionId),
-        user_id: BigInt(params.userId),
+        mission_id: params.missionId,
+        user_id: params.userId,
       },
     });
-    return Number(row.id);
+    return row.id;
   }
 
   public async userMissionBelongsToStore(
-    userId: number,
-    userMissionId: number,
-    storeId: number,
+    userId: bigint,
+    userMissionId: bigint,
+    storeId: bigint,
   ): Promise<boolean> {
     const row = await prisma.user_mission.findFirst({
       where: {
-        id: BigInt(userMissionId),
-        user_id: BigInt(userId),
+        id: userMissionId,
+        user_id: userId,
         deleted_at: null,
         mission: {
-          store_id: BigInt(storeId),
+          store_id: storeId,
           deleted_at: null,
         },
       },

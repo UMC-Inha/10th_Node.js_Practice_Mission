@@ -7,6 +7,7 @@ import {
   MISSION_ERROR_CODE,
   USER_ERROR_CODE,
 } from '../../../common/error-code';
+import { routeParamToPositiveBigInt } from '../../../common/id-string';
 
 @injectable()
 export class UserMissionController {
@@ -24,15 +25,11 @@ export class UserMissionController {
       );
     }
 
-    const missionId = Number(req.params.missionId);
-
-    if (!Number.isInteger(missionId) || missionId <= 0) {
-      throw new AppError(
-        MISSION_ERROR_CODE.MISSION_NOT_FOUND,
-        `유효하지 않은 미션 id 입니다. (id: ${req.params.missionId})`,
-        StatusCodes.BAD_REQUEST,
-      );
-    }
+    const missionId = routeParamToPositiveBigInt(
+      req.params.missionId,
+      MISSION_ERROR_CODE.MISSION_NOT_FOUND,
+      '유효하지 않은 미션 id 입니다.',
+    );
 
     const userMission = await this.userMissionService.challengeMission(
       req.user.id,

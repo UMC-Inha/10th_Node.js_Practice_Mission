@@ -16,13 +16,13 @@ export class StoreService {
     private readonly locationService: LocationService
   ) {}
 
-  public async createStore(store: CreateStoreRequest): Promise<number> {
+  public async createStore(store: CreateStoreRequest): Promise<bigint> {
     await this.locationService.getLocationNameById(store.locationId);
     const newStoreId = await this.storeRepository.createStore(store);
     return newStoreId;
   }
 
-  public async ensureStoreExists(storeId: number): Promise<void> {
+  public async ensureStoreExists(storeId: bigint): Promise<void> {
     const exists = await this.storeRepository.existsById(storeId);
 
     if (!exists) {

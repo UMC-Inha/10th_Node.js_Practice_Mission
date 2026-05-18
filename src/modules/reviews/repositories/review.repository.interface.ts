@@ -1,11 +1,11 @@
 export interface CreateReviewParams {
-  storeId: number;
-  userId: number;
-  userMissionId: number;
+  storeId: bigint;
+  userId: bigint;
+  userMissionId: bigint;
   content: string;
   score?: number | null;
 }
 
 export abstract class ReviewRepositoryInterface {
-  abstract createReview(params: CreateReviewParams): Promise<number>;
+  abstract createReview(params: CreateReviewParams): Promise<bigint>;
 }

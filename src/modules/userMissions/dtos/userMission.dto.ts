@@ -1,9 +1,9 @@
 export type UserMissionStatus = 'PROGRESS' | 'PENDING' | 'SUCCESS';
 
 export interface ChallengeMissionResponse {
-  userMissionId: number;
-  userId: number;
-  missionId: number;
+  userMissionId: bigint;
+  userId: bigint;
+  missionId: bigint;
   status: UserMissionStatus;
   createdAt: Date;
 }

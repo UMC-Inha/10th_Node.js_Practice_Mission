@@ -24,7 +24,7 @@ export class ReviewService {
   ) {}
 
   public async createReview(
-    storeId: number,
+    storeId: bigint,
     data: CreateReviewRequest,
   ): Promise<CreateReviewResponse> {
     await this.storeService.ensureStoreExists(storeId);
