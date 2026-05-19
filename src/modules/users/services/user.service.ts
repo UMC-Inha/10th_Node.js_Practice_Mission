@@ -1,53 +1,87 @@
-import { UserSignUpRequest } from "../dtos/user.dto.js"; //인터페이스 가져오기 
-import { 
-    responseFromUser,
-    bodyToUser 
-  } from "../dtos/user.dto.js";
 import bcrypt from "bcrypt";
+import { CustomError } from "../../../common/errors/custom.error.js";
+
 import {
   addUser,
   getUser,
+  getUserByEmail,
   getUserPreferencesByUserId,
   setPreference,
 } from "../repositories/user.repository.js";
-import { CustomError } from "../../../errors/custom.error.js";
+
+import { UserSignUpRequest } from "../dtos/user.request.dto.js";
+import { UserSignUpResponse } from "../dtos/user.response.dto.js";
 
 export const userSignUp = async (
-  data: UserSignUpRequest
-) => {
-  const converted = bodyToUser(data);
-
-  const hashedPassword = await bcrypt.hash(
-    converted.password, 
-    10
-  );
-
-  const joinUserId = await addUser({
-    email: converted.email,
-    password: hashedPassword,
-    name: converted.name,
-    gender: converted.gender,
-    birth: converted.birth,
-    address: converted.address,
-    detailAddress: converted.detail,
-    phoneNumber: converted.phoneNumber,
-  });
-
-  if (joinUserId === null) {
+  data: UserSignUpRequest,
+): Promise<UserSignUpResponse> => {
+  if (!data.preferences?.length) {
     throw new CustomError(
-      409,
-      "이미 존재하는 이메일입니다."
+      400,
+      "선호 카테고리 필요",
+      "PREFERENCE_REQUIRED",
     );
   }
 
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  const existingUser = await getUserByEmail(data.email);
+
+  if (existingUser) {
+    throw new CustomError(409, "이미 존재하는 이메일입니다.");
+  }
+
+  // 1. 유저 생성
+  const createdUser = await addUser({
+    email: data.email,
+    password: hashedPassword,
+    name: data.name,
+    gender: data.gender,
+    birth: new Date(data.birth),
+    address: data.address ?? "",
+    detailAddress: data.detail ?? "",
+    phoneNumber: data.phoneNumber,
+  });
+
+  // 2. 선호 저장
   await Promise.all(
     data.preferences.map((pref) =>
-      setPreference(joinUserId, pref)
-    )
+      setPreference(createdUser.userId, pref),
+    ),
   );
 
-  const user = await getUser(joinUserId);
-  const preferences = await getUserPreferencesByUserId(joinUserId);
+  // 3. user 조회
+  const user = await getUser(createdUser.userId);
 
-  return responseFromUser({ user, preferences });
+  if (!user) {
+    throw new CustomError(404, "유저 없음");
+  }
+
+  // 4. preference 조회
+  const preferences = await getUserPreferencesByUserId(
+    createdUser.userId,
+  );
+
+  // 5. DTO 반환
+  return {
+    userId: user.userId,
+    role: user.role,
+    name: user.name,
+    gender: user.gender,
+    birth: user.birth,
+
+    address: user.address ?? "",
+    city: user.city ?? "",
+    district: user.district ?? "",
+    neighborhood: user.neighborhood ?? "",
+    detail: user.detail ?? "",
+
+    phoneNumber: user.phoneNumber,
+    point: user.point,
+    createdAt: user.createdAt,
+
+    preferences: preferences.map((p) =>
+      String(p.foodCategoryId),
+    ),
+  };
 };

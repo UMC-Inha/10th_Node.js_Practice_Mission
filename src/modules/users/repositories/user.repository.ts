@@ -11,20 +11,16 @@ interface AddUserParams {
   phoneNumber: string;
 }
 
-// 1. 사용자 생성
-export const addUser = async (
-  data: AddUserParams
-): Promise<number | null> => {
-  // 이메일 중복 체크
-  const existing = await prisma.user.findUnique({
-    where: { email: data.email },
+// 이메일로 사용자 조회
+export const getUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: { email },
   });
+};
 
-  if (existing) {
-    return null;
-  }
-
-  const user = await prisma.user.create({
+// 사용자 생성
+export const addUser = async (data: AddUserParams) => {
+  return await prisma.user.create({
     data: {
       email: data.email,
       password: data.password,
@@ -36,15 +32,10 @@ export const addUser = async (
       phoneNumber: data.phoneNumber,
     },
   });
-
-  return user.userId;
 };
 
-// 2. 사용자 조회
-export const getUser = async (
-  userId: number
-) => {
-
+// 사용자 조회
+export const getUser = async (userId: number) => {
   return await prisma.user.findUnique({
     where: { userId },
   });
@@ -52,10 +43,9 @@ export const getUser = async (
 
 // 3. 선호 카테고리 설정
 export const setPreference = async (
-  userId: number, 
-  foodCategoryId: number
+  userId: number,
+  foodCategoryId: number,
 ): Promise<void> => {
-
   await prisma.userPreference.create({
     data: {
       userId,
@@ -65,16 +55,9 @@ export const setPreference = async (
 };
 
 // 4. 사용자 선호 조회
-export const getUserPreferencesByUserId = async (
-  userId: number
-) => {
-
+export const getUserPreferencesByUserId = async (userId: number) => {
   return await prisma.userPreference.findMany({
-    where: {
-      userId,
-    },
-    orderBy: {
-      foodCategoryId: "asc",
-    },
+    where: { userId },
+    orderBy: { foodCategoryId: "asc" },
   });
 };

@@ -1,69 +1,47 @@
-import { Request, Response } from "express";
+import { Body, Controller, Path, Post, Route, Tags, SuccessResponse, Response, Get } from "tsoa";
 import { StatusCodes } from "http-status-codes";
+
 import { createReviewService, getMyReviewsService } from "../services/review.service.js";
-import { ApiResponse } from "../../../utils/api.response.js";
-import { CustomError } from "../../../errors/custom.error.js";
 
-export const createReview = async (req: Request, res: Response) => {
-  try {
-    const result = await createReviewService(req.body);
+import { ApiResponse } from "../../../common/responses/api.response.js";
 
-    return res.status(StatusCodes.CREATED).json(
-      ApiResponse.success(
-        201,
-        "리뷰 작성 성공",
-        result
-      )
-    );
-  } catch (err) {
+@Route("reviews")
+@Tags("Reviews")
+export class ReviewController extends Controller {
 
-    if (err instanceof CustomError) {
-      return res.status(err.status).json(
-        ApiResponse.error(
-          err.status,
-          err.message
-        )
-      );
-    }
+  @SuccessResponse(StatusCodes.CREATED, "리뷰 작성 성공")
+  @Response(500, "서버 내부 오류")
+  @Post()
+  public async createReview(
+    @Body() body: any,
+  ) {
 
-    return res.status(500).json(
-      ApiResponse.error(
-        500,
-        "서버 내부 오류"
-      )
+    const result = await createReviewService(body);
+
+    this.setStatus(StatusCodes.CREATED);
+
+    return ApiResponse.success(
+      201,
+      "리뷰 작성 성공",
+      result,
     );
   }
-};
 
-export const getMyReviews = async (req: Request, res: Response) => {
-  try {
-    const userId = Number(req.params.userId);
+  @SuccessResponse(StatusCodes.OK, "내 리뷰 조회 성공")
+  @Response(500, "서버 내부 오류")
+  @Get("{userId}")
+  public async getMyReviews(
+    @Path() userId: number,
+  ) {
 
     const result = await getMyReviewsService(userId);
 
-    return res.status(StatusCodes.OK).json(
-      ApiResponse.success(
-        200,
-        "내 리뷰 조회 성공",
-        result
-      )
-    );
-  } catch (err) {
+    this.setStatus(StatusCodes.OK);
 
-    if (err instanceof CustomError) {
-      return res.status(err.status).json(
-        ApiResponse.error(
-          err.status,
-          err.message
-        )
-      );
-    }
-
-    return res.status(500).json(
-      ApiResponse.error(
-        500,
-        "서버 내부 오류"
-      )
+    return ApiResponse.success(
+      200,
+      "내 리뷰 조회 성공",
+      result,
     );
   }
-};
+}

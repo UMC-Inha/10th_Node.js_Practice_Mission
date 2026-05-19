@@ -1,4 +1,6 @@
+import { PrismaClient } from "@prisma/client/extension";
 import { prisma } from "../../../db.config.js";
+import { Prisma } from "../../../generated/prisma/client.js";
 
 interface AddUserMissionParams {
   userId: number;
@@ -7,28 +9,22 @@ interface AddUserMissionParams {
 }
 
 // 미션 추가
-export const addUserMission = async (
-  data: AddUserMissionParams
-): Promise<number> => {
-  
-  const userMission =
-    await prisma.userMission.create({
-      data: {
-        userId: data.userId,
-        missionId: data.missionId,
-        storeId: data.storeId,
-        status: "RECEIVED",
-      },
-    });
-
-  return userMission.userMissionId;
+export const addUserMission = async (data: AddUserMissionParams) => {
+  return await prisma.userMission.create({
+    data: {
+      userId: data.userId,
+      missionId: data.missionId,
+      storeId: data.storeId,
+      status: "RECEIVED",
+    },
+  });
 };
 
+// 중복 체크
 export const checkUserMission = async (
   userId: number,
-  missionId: number
+  missionId: number,
 ): Promise<boolean> => {
-  
   const exist = await prisma.userMission.findFirst({
     where: {
       userId,
@@ -39,11 +35,8 @@ export const checkUserMission = async (
   return !!exist;
 };
 
-// 진행중 미션 목록
-export const getReceivedMissionsByUserId = async (
-  userId: number
-) => {
-
+// 진행중 미션 목록 조회
+export const getReceivedMissionsByUserId = async (userId: number) => {
   return await prisma.userMission.findMany({
     where: {
       userId,
@@ -59,17 +52,29 @@ export const getReceivedMissionsByUserId = async (
   });
 };
 
+// 미션 완료 처리
 export const completeUserMission = async (
-  userMissionId: number
+  userMissionId: number,
+  tx: PrismaClient,
 ) => {
-
-  return await prisma.userMission.update({
-    where: {
-      userMissionId,
-    },
+  return tx.userMission.update({
+    where: { userMissionId },
     data: {
       status: "COMPLETED",
       completedAt: new Date(),
+    },
+  });
+};
+
+// 단건 조회 (service에서 필요해서 추가 - 중요)
+export const getUserMissionById = async (userMissionId: number) => {
+  return await prisma.userMission.findUnique({
+    where: {
+      userMissionId,
+    },
+    include: {
+      mission: true,
+      store: true,
     },
   });
 };
