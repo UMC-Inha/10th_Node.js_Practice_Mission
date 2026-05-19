@@ -11,16 +11,15 @@ interface AddUserParams {
   phoneNumber: string;
 }
 
-// 1. 사용자 생성
-export const addUser = async (data: AddUserParams) => {
-  const existing = await prisma.user.findUnique({
-    where: { email: data.email },
+// 이메일로 사용자 조회
+export const getUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: { email },
   });
+};
 
-  if (existing) {
-    return null;
-  }
-
+// 사용자 생성
+export const addUser = async (data: AddUserParams) => {
   return await prisma.user.create({
     data: {
       email: data.email,
@@ -35,7 +34,7 @@ export const addUser = async (data: AddUserParams) => {
   });
 };
 
-// 2. 사용자 조회
+// 사용자 조회
 export const getUser = async (userId: number) => {
   return await prisma.user.findUnique({
     where: { userId },

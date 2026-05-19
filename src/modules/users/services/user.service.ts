@@ -4,26 +4,32 @@ import { CustomError } from "../../../common/errors/custom.error.js";
 import {
   addUser,
   getUser,
+  getUserByEmail,
   getUserPreferencesByUserId,
   setPreference,
 } from "../repositories/user.repository.js";
 
-import { UserSignUpRequest} from "../dtos/user.request.dto.js";
-
+import { UserSignUpRequest } from "../dtos/user.request.dto.js";
 import { UserSignUpResponse } from "../dtos/user.response.dto.js";
 
 export const userSignUp = async (
   data: UserSignUpRequest,
 ): Promise<UserSignUpResponse> => {
-   if (!data.preferences?.length) {
+  if (!data.preferences?.length) {
     throw new CustomError(
       400,
       "선호 카테고리 필요",
       "PREFERENCE_REQUIRED",
     );
   }
-  
+
   const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  const existingUser = await getUserByEmail(data.email);
+
+  if (existingUser) {
+    throw new CustomError(409, "이미 존재하는 이메일입니다.");
+  }
 
   // 1. 유저 생성
   const createdUser = await addUser({
@@ -36,10 +42,6 @@ export const userSignUp = async (
     detailAddress: data.detail ?? "",
     phoneNumber: data.phoneNumber,
   });
-
-  if (!createdUser) {
-    throw new CustomError(409, "이미 존재하는 이메일입니다.");
-  }
 
   // 2. 선호 저장
   await Promise.all(
@@ -56,7 +58,9 @@ export const userSignUp = async (
   }
 
   // 4. preference 조회
-  const preferences = await getUserPreferencesByUserId(createdUser.userId);
+  const preferences = await getUserPreferencesByUserId(
+    createdUser.userId,
+  );
 
   // 5. DTO 반환
   return {
@@ -76,6 +80,8 @@ export const userSignUp = async (
     point: user.point,
     createdAt: user.createdAt,
 
-    preferences: preferences.map((p) => String(p.foodCategoryId)),
+    preferences: preferences.map((p) =>
+      String(p.foodCategoryId),
+    ),
   };
 };
