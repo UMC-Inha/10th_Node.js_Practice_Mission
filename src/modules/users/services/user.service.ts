@@ -80,8 +80,6 @@ export const userSignUp = async (
     point: user.point,
     createdAt: user.createdAt,
 
-    preferences: preferences.map((p) =>
-      String(p.foodCategoryId),
-    ),
+    preferences: preferences.map((p) => p.foodType),
   };
 };

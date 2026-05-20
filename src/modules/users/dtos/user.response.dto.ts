@@ -1,3 +1,5 @@
+import { FoodType } from "../../../generated/prisma/enums.js";
+
 export interface UserSignUpResponse {
   userId: number;
 
@@ -19,5 +21,5 @@ export interface UserSignUpResponse {
 
   createdAt: Date;
 
-  preferences: string[];
+  preferences: FoodType[];
 }

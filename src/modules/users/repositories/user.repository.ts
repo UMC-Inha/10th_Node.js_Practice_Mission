@@ -1,4 +1,5 @@
 import { prisma } from "../../../db.config.js";
+import { FoodType } from "../../../generated/prisma/enums.js";
 
 interface AddUserParams {
   email: string;
@@ -41,23 +42,25 @@ export const getUser = async (userId: number) => {
   });
 };
 
-// 3. 선호 카테고리 설정
+// 선호 카테고리 설정
 export const setPreference = async (
   userId: number,
-  foodCategoryId: number,
+  foodType: FoodType,
 ): Promise<void> => {
   await prisma.userPreference.create({
     data: {
       userId,
-      foodCategoryId,
+      foodType,
     },
   });
 };
 
-// 4. 사용자 선호 조회
-export const getUserPreferencesByUserId = async (userId: number) => {
+// 사용자 선호 조회
+export const getUserPreferencesByUserId = async (
+  userId: number,
+) => {
   return await prisma.userPreference.findMany({
     where: { userId },
-    orderBy: { foodCategoryId: "asc" },
+    orderBy: { foodType: "asc" },
   });
 };
