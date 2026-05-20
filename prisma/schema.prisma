@@ -122,6 +122,8 @@ model Review {
 
   rating         Int
   content        String
+  reviewImages   ReviewImage[]
+
   createdAt      DateTime @default(now())
   deletedAt      DateTime?
 
@@ -130,4 +132,17 @@ model Review {
   userMission    UserMission? @relation(fields: [userMissionId], references: [userMissionId])
 
   @@unique([userId, userMissionId])
+}
+
+model ReviewImage {
+  imageId     Int      @id @default(autoincrement())
+  reviewId    Int
+
+  imageUrl    String
+
+  createdAt   DateTime @default(now())
+
+  review      Review @relation(fields: [reviewId], references: [reviewId])
+
+  @@index([reviewId])
 }

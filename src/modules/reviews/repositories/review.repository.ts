@@ -21,6 +21,20 @@ export const addReview = async (data: AddReviewParams) => {
   });
 };
 
+// 리뷰 이미지 저장
+export const addReviewImages = async (
+  reviewId: number,
+  imageUrls: string[],
+): Promise<void> => {
+
+  await prisma.reviewImage.createMany({
+    data: imageUrls.map((url) => ({
+      reviewId,
+      imageUrl: url,
+    })),
+  });
+};
+
 // 중복 체크
 export const checkReview = async (
   userId: number,

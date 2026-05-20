@@ -20,6 +20,11 @@ import type { Request as ExRequest, Response as ExResponse, RequestHandler, Rout
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "FoodType": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["한식"]},{"dataType":"enum","enums":["일식"]},{"dataType":"enum","enums":["중식"]},{"dataType":"enum","enums":["양식"]},{"dataType":"enum","enums":["치킨"]},{"dataType":"enum","enums":["분식"]},{"dataType":"enum","enums":["고기_구이"]},{"dataType":"enum","enums":["도시락"]},{"dataType":"enum","enums":["야식"]},{"dataType":"enum","enums":["패스트푸드"]},{"dataType":"enum","enums":["디저트"]},{"dataType":"enum","enums":["아시안푸드"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserSignUpResponse": {
         "dataType": "refObject",
         "properties": {
@@ -36,7 +41,7 @@ const models: TsoaRoute.Models = {
             "phoneNumber": {"dataType":"string","required":true},
             "point": {"dataType":"double","required":true},
             "createdAt": {"dataType":"datetime","required":true},
-            "preferences": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "preferences": {"dataType":"array","array":{"dataType":"refAlias","ref":"FoodType"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -67,31 +72,7 @@ const models: TsoaRoute.Models = {
             "neighborhood": {"dataType":"string"},
             "detail": {"dataType":"string"},
             "phoneNumber": {"dataType":"string","required":true},
-            "preferences": {"dataType":"array","array":{"dataType":"double"},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse__userMissionId-number__": {
-        "dataType": "refObject",
-        "properties": {
-            "success": {"dataType":"boolean","required":true},
-            "code": {"dataType":"double","required":true},
-            "message": {"dataType":"string","required":true},
-            "data": {"dataType":"nestedObjectLiteral","nestedProperties":{"userMissionId":{"dataType":"double","required":true}}},
-            "errorCode": {"dataType":"string"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ApiResponse__40__mission_58__missionId-number--storeId-number--createdAt-Date--title-string--description-string--reward-number_--store_58__storeId-number--address-string--city-string--district-string--neighborhood-string--detail-string--createdAt-Date--updatedAt-Date--deletedAt-Date--storeName-string--latitude-number--longitude-number__-and-_userMissionId-number--userId-number--missionId-number--reviewId-number--storeId-number--status-string--receivedAt-Date--completedAt-Date__41_-Array_": {
-        "dataType": "refObject",
-        "properties": {
-            "success": {"dataType":"boolean","required":true},
-            "code": {"dataType":"double","required":true},
-            "message": {"dataType":"string","required":true},
-            "data": {"dataType":"array","array":{"dataType":"intersection","subSchemas":[{"dataType":"nestedObjectLiteral","nestedProperties":{"store":{"dataType":"nestedObjectLiteral","nestedProperties":{"longitude":{"dataType":"double","required":true},"latitude":{"dataType":"double","required":true},"storeName":{"dataType":"string","required":true},"deletedAt":{"dataType":"datetime","required":true},"updatedAt":{"dataType":"datetime","required":true},"createdAt":{"dataType":"datetime","required":true},"detail":{"dataType":"string","required":true},"neighborhood":{"dataType":"string","required":true},"district":{"dataType":"string","required":true},"city":{"dataType":"string","required":true},"address":{"dataType":"string","required":true},"storeId":{"dataType":"double","required":true}},"required":true},"mission":{"dataType":"nestedObjectLiteral","nestedProperties":{"reward":{"dataType":"double","required":true},"description":{"dataType":"string","required":true},"title":{"dataType":"string","required":true},"createdAt":{"dataType":"datetime","required":true},"storeId":{"dataType":"double","required":true},"missionId":{"dataType":"double","required":true}},"required":true}}},{"dataType":"nestedObjectLiteral","nestedProperties":{"completedAt":{"dataType":"datetime","required":true},"receivedAt":{"dataType":"datetime","required":true},"status":{"dataType":"string","required":true},"storeId":{"dataType":"double","required":true},"reviewId":{"dataType":"double","required":true},"missionId":{"dataType":"double","required":true},"userId":{"dataType":"double","required":true},"userMissionId":{"dataType":"double","required":true}}}]}},
-            "errorCode": {"dataType":"string"},
+            "preferences": {"dataType":"array","array":{"dataType":"refAlias","ref":"FoodType"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -116,6 +97,38 @@ const models: TsoaRoute.Models = {
             "code": {"dataType":"double","required":true},
             "message": {"dataType":"string","required":true},
             "data": {"ref":"ChallengeMissionResponse"},
+            "errorCode": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_null_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"double","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"enum","enums":[null]},
+            "errorCode": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ChallengeMissionRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "userId": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_ChallengeMissionResponse-Array_": {
+        "dataType": "refObject",
+        "properties": {
+            "success": {"dataType":"boolean","required":true},
+            "code": {"dataType":"double","required":true},
+            "message": {"dataType":"string","required":true},
+            "data": {"dataType":"array","array":{"dataType":"refObject","ref":"ChallengeMissionResponse"}},
             "errorCode": {"dataType":"string"},
         },
         "additionalProperties": false,
@@ -150,6 +163,21 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateStoreRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "storeName": {"dataType":"string","required":true},
+            "address": {"dataType":"string","required":true},
+            "city": {"dataType":"string","required":true},
+            "district": {"dataType":"string","required":true},
+            "neighborhood": {"dataType":"string","required":true},
+            "detail": {"dataType":"string","required":true},
+            "latitude": {"dataType":"double","required":true},
+            "longitude": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateReviewResponse": {
         "dataType": "refObject",
         "properties": {
@@ -158,6 +186,7 @@ const models: TsoaRoute.Models = {
             "storeId": {"dataType":"double","required":true},
             "rating": {"dataType":"double","required":true},
             "content": {"dataType":"string","required":true},
+            "images": {"dataType":"array","array":{"dataType":"string"}},
             "createdAt": {"dataType":"datetime","required":true},
             "deletedAt": {"dataType":"datetime"},
         },
@@ -172,6 +201,19 @@ const models: TsoaRoute.Models = {
             "message": {"dataType":"string","required":true},
             "data": {"ref":"CreateReviewResponse"},
             "errorCode": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateReviewRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "userId": {"dataType":"double","required":true},
+            "storeId": {"dataType":"double","required":true},
+            "userMissionId": {"dataType":"double","required":true},
+            "rating": {"dataType":"double","required":true},
+            "content": {"dataType":"string","required":true},
+            "imageUrls": {"dataType":"array","array":{"dataType":"string"}},
         },
         "additionalProperties": false,
     },
@@ -209,6 +251,17 @@ const models: TsoaRoute.Models = {
             "message": {"dataType":"string","required":true},
             "data": {"ref":"CreateMissionResponse"},
             "errorCode": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateMissionRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "storeId": {"dataType":"double","required":true},
+            "title": {"dataType":"string","required":true},
+            "description": {"dataType":"string","required":true},
+            "reward": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -274,7 +327,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserMissionController_challengeMission: Record<string, TsoaRoute.ParameterSchema> = {
                 missionId: {"in":"path","name":"missionId","required":true,"dataType":"double"},
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"ChallengeMissionRequest"},
         };
         app.post('/user-missions/:missionId',
             ...(fetchMiddlewares<RequestHandler>(UserMissionController)),
@@ -335,7 +388,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserMissionController_completeUserMission: Record<string, TsoaRoute.ParameterSchema> = {
                 userMissionId: {"in":"path","name":"userMissionId","required":true,"dataType":"double"},
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"ChallengeMissionRequest"},
         };
         app.patch('/user-missions/:userMissionId',
             ...(fetchMiddlewares<RequestHandler>(UserMissionController)),
@@ -365,7 +418,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsStoreController_createStore: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateStoreRequest"},
         };
         app.post('/stores',
             ...(fetchMiddlewares<RequestHandler>(StoreController)),
@@ -395,7 +448,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsReviewController_createReview: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateReviewRequest"},
         };
         app.post('/reviews',
             ...(fetchMiddlewares<RequestHandler>(ReviewController)),
@@ -456,7 +509,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsMissionController_createMission: Record<string, TsoaRoute.ParameterSchema> = {
                 storeId: {"in":"path","name":"storeId","required":true,"dataType":"double"},
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateMissionRequest"},
         };
         app.post('/missions/:storeId',
             ...(fetchMiddlewares<RequestHandler>(MissionController)),

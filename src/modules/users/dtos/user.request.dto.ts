@@ -25,35 +25,55 @@ export class UserSignUpRequest {
   name!: string;
 
   /**
-   * 성별
+   * 사용자 성별
    * @example "male"
    */
   @IsString()
   gender!: string;
 
   /**
-   * 생년월일
+   * 사용자 생년월일
    * @example "2000-01-01"
    */
   @IsDateString()
   birth!: string;
 
+  /**
+   * 주소
+   * @example "서울특별시 강남구"
+   */
   @IsOptional()
   @IsString()
   address?: string;
 
+  /**
+   * 시/도
+   * @example "서울특별시"
+   */
   @IsOptional()
   @IsString()
   city?: string;
 
+  /**
+   * 구
+   * @example "강남구"
+   */
   @IsOptional()
   @IsString()
   district?: string;
 
+  /**
+   * 동
+   * @example "역삼동"
+   */
   @IsOptional()
   @IsString()
   neighborhood?: string;
 
+  /**
+   * 상세 주소
+   * @example "101동 202호"
+   */
   @IsOptional()
   @IsString()
   detail?: string;
