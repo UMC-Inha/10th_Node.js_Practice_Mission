@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build:routes": "tsoa routes",
+    "build:spec": "tsoa spec",
+    "prestart": "npm run build:routes",
     "start": "tsx src/index.ts",
-    "dev": "nodemon --ext ts,prisma --exec \"npx prisma generate && tsx src/index.ts\""
+    "predev": "npm run build:routes",
+    "dev": "nodemon --ext ts,prisma --exec \"npx prisma generate && npm run build:routes && tsx src/index.ts\""
   },
   "keywords": [],
   "author": "",

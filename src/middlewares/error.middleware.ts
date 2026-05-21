@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
+import { ValidateError } from 'tsoa';
 import { AppError } from '../common/app-error';
 import { errorResponse } from '../common/api-response';
 
@@ -28,6 +29,19 @@ export const globalErrorHandler: ErrorRequestHandler = (
       .status(err.statusCode)
       .json(
         errorResponse(err.errorCode, err.message, err.statusCode, err.details),
+      );
+    return;
+  }
+
+  if (err instanceof ValidateError) {
+    const message = Object.values(err.fields)
+      .map((field) => field.message)
+      .join(', ');
+
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json(
+        errorResponse('VALIDATION_ERROR', message, StatusCodes.BAD_REQUEST),
       );
     return;
   }

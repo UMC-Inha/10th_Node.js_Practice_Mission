@@ -4,9 +4,13 @@
   "controllerPathGlobs": ["src/**/*.controller.ts"],
   "spec": {
     "outputDirectory": "dist",
-    "specVersion": 3
+    "specVersion": 3,
+    "basePath": "/api/v1"
   },
   "routes": {
-    "routesDir": "src/generated"
+    "routesDir": "src/generated",
+    "basePath": "/api/v1",
+    "middleware": "express",
+    "iocModule": "src/index.ts"
   }
 }
