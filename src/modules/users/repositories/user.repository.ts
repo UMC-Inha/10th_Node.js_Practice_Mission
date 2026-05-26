@@ -4,6 +4,7 @@ import { prisma } from '../../../config/db.config';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { UserRepositoryInterface } from './user.repository.interface';
 import { UserSignUpRequest } from '../dtos/userSignUpRequest.dto';
+import { UserUpdateProfileData } from '../dtos/userUpdateProfileRequest.dto';
 import { AppError } from '../../../common/app-error';
 import { USER_ERROR_CODE } from '../../../common/error-code';
 
@@ -100,5 +101,68 @@ export class UserRepository implements UserRepositoryInterface {
       user_id: r.user_id,
       name: r.food_category?.name ?? null,
     }));
+  }
+
+  public async updateUser(
+    userId: bigint,
+    data: Omit<UserUpdateProfileData, 'preferences'>,
+  ): Promise<void> {
+    const result = await prisma.user.updateMany({
+      where: { id: userId, deleted_at: null },
+      data: {
+        ...(data.name !== undefined && { nickname: data.name }),
+        ...(data.gender !== undefined && { gender: data.gender }),
+        ...(data.birth !== undefined && { birth: data.birth }),
+        ...(data.phoneNumber !== undefined && {
+          phone_number: data.phoneNumber,
+        }),
+        ...(data.address !== undefined && { address_doro: data.address }),
+        ...(data.detailAddress !== undefined && {
+          address_detail: data.detailAddress,
+        }),
+      },
+    });
+
+    if (result.count === 0) {
+      throw new AppError(
+        USER_ERROR_CODE.USER_NOT_FOUND,
+        '존재하지 않는 사용자입니다.',
+        StatusCodes.NOT_FOUND,
+      );
+    }
+  }
+
+  public async replacePreferences(
+    userId: bigint,
+    foodCategoryIds: bigint[],
+  ): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      await tx.user_favorite_food.deleteMany({
+        where: { user_id: userId },
+      });
+
+      for (const foodCategoryId of foodCategoryIds) {
+        try {
+          await tx.user_favorite_food.create({
+            data: {
+              user_id: userId,
+              food_category_id: foodCategoryId,
+            },
+          });
+        } catch (e) {
+          if (
+            e instanceof Prisma.PrismaClientKnownRequestError &&
+            e.code === 'P2002'
+          ) {
+            throw new AppError(
+              USER_ERROR_CODE.USER_ALREADY_EXISTS,
+              '이미 등록된 선호 음식 카테고리입니다.',
+              StatusCodes.CONFLICT,
+            );
+          }
+          throw e;
+        }
+      }
+    });
   }
 }
