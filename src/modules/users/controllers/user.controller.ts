@@ -16,10 +16,22 @@ export class UserController extends Controller {
    * 
    * 사용자를 생성하고 선호 카테고리를 저장합니다.
    */
-  @SuccessResponse(StatusCodes.CREATED, "회원가입 성공")
-  @Response(400, "잘못된 요청")
-  @Response(409, "이미 존재하는 이메일")
-  @Response(500, "서버 내부 오류")
+  @SuccessResponse(
+    StatusCodes.CREATED, 
+    "회원가입 성공",
+  )
+  @Response<ApiResponse<null>>(
+    400, 
+    "잘못된 요청",
+  )
+  @Response<ApiResponse<null>>(
+    409, 
+    "이미 존재하는 이메일",
+  )
+  @Response<ApiResponse<null>>(
+    500, 
+    "서버 내부 오류",
+  )
   @Post("signup")
   
   public async handleUserSignUp(

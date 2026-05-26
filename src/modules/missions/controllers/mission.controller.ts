@@ -18,10 +18,22 @@ export class MissionController extends Controller {
    *
    * 특정 가게에 새로운 미션을 생성합니다.
    */
-  @SuccessResponse(201, "미션 생성 성공")
-  @Response<ApiResponse<null>>(400, "잘못된 요청")
-  @Response<ApiResponse<null>>(404, "가게를 찾을 수 없음")
-  @Response<ApiResponse<null>>(500, "서버 내부 오류")
+  @SuccessResponse(
+    201, 
+    "미션 생성 성공",
+  )
+  @Response<ApiResponse<null>>(
+    400, 
+    "잘못된 요청",
+  )
+  @Response<ApiResponse<null>>(
+    404, 
+    "가게를 찾을 수 없음",
+  )
+  @Response<ApiResponse<null>>(
+    500, 
+    "서버 내부 오류",
+  )
   @Post("{storeId}")
   public async createMission(
     /**
@@ -52,9 +64,18 @@ export class MissionController extends Controller {
    *
    * 특정 가게의 미션 목록을 조회합니다.
    */
-  @SuccessResponse(200, "가게 미션 조회 성공")
-  @Response<ApiResponse<null>>(404, "가게를 찾을 수 없음")
-  @Response<ApiResponse<null>>(500, "서버 내부 오류")
+  @SuccessResponse(
+    200, 
+    "가게 미션 조회 성공",
+  )
+  @Response<ApiResponse<null>>(
+    404, 
+    "가게를 찾을 수 없음",
+  )
+  @Response<ApiResponse<null>>(
+    500, 
+    "서버 내부 오류",
+  )
   @Get("{storeId}")
   public async getStoreMissions(
 

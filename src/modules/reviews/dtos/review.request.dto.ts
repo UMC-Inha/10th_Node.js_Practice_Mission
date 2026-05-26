@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsString, IsUrl , Matches,Max, Min } from "class-validator";
 
 export class CreateReviewRequest {
 
@@ -40,11 +40,15 @@ export class CreateReviewRequest {
   content!: string;
 
   /**
- * 리뷰 이미지 URL 목록
- * @example ["https://example.com/1.jpg"]
- */
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+   * 리뷰 이미지 URL 목록
+   * @example ["https://example.com/1.jpg"]
+   */
+    @IsOptional()
+    @IsArray()
+    @IsUrl({}, { each: true })
+    @Matches(/\.(jpg|jpeg|png|svg)$/i, {
+    each: true,
+    message: "jpg, jpeg, png, svg 형식만 가능합니다.",
+  })
   imageUrls?: string[];
 }

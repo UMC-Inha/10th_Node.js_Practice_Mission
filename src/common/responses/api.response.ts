@@ -23,8 +23,8 @@ export class ApiResponse<T> {
     code: number,
     message: string,
     data?: T,
-  ) {
-    return new ApiResponse(
+  ): ApiResponse<T> {
+    return new ApiResponse<T>(
       true,
       code,
       message,
@@ -36,13 +36,12 @@ export class ApiResponse<T> {
     code: number,
     message: string,
     errorCode?: string,
-    data?: unknown,
-  ) {
-    return new ApiResponse(
+  ): ApiResponse<null> {
+    return new ApiResponse<null>(
       false,
       code,
       message,
-      data,
+      undefined,
       errorCode,
     );
   }
