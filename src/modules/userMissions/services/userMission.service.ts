@@ -20,7 +20,7 @@ import { ChallengeMissionResponse } from "../dtos/userMission.response.dto.js";
 export const challengeMissionService = async (
   missionId: number,
   userId: number,
-): Promise<{ userMissionId: number }> => {
+): Promise<ChallengeMissionResponse> => {
 
   validateRequired(userId, "userId 필요");
   validateRequired(missionId, "missionId 필요");
@@ -56,17 +56,32 @@ export const challengeMissionService = async (
 
   return {
     userMissionId: userMission.userMissionId,
+    userId: userMission.userId,
+    missionId: userMission.missionId,
+    status: userMission.status,
+    receivedAt: userMission.receivedAt,
+    completedAt: userMission.completedAt,
   };
 };
 
 // 진행중 미션 조회
 export const getReceivedMissionsService = async (
   userId: number,
-) => {
+): Promise<ChallengeMissionResponse[]> => {
 
   validateRequired(userId, "userId 필요");
 
-  return await getReceivedMissionsByUserId(userId);
+  const missions =
+    await getReceivedMissionsByUserId(userId);
+
+  return missions.map((mission) => ({
+    userMissionId: mission.userMissionId,
+    userId: mission.userId,
+    missionId: mission.missionId,
+    status: mission.status,
+    receivedAt: mission.receivedAt,
+    completedAt: mission.completedAt,
+  }));
 };
 
 // 미션 완료
@@ -75,7 +90,11 @@ export const completeUserMissionService = async (
   userId: number,
 ): Promise<ChallengeMissionResponse> => {
 
-  validateRequired(userMissionId, "userMissionId 필요");
+  validateRequired(
+    userMissionId,
+    "userMissionId 필요",
+  );
+
   validateRequired(userId, "userId 필요");
 
   const userMission = await getUserMissionById(
@@ -109,26 +128,26 @@ export const completeUserMissionService = async (
   const reward = userMission.mission.reward;
 
   const updated = await prisma.$transaction(
-  async (tx) => {
+    async (tx) => {
 
-    const completedMission =
-      await completeUserMission(
-        userMissionId,
-        tx,
-      );
+      const completedMission =
+        await completeUserMission(
+          userMissionId,
+          tx,
+        );
 
-    await tx.user.update({
-      where: { userId },
-      data: {
-        point: {
-          increment: reward,
+      await tx.user.update({
+        where: { userId },
+        data: {
+          point: {
+            increment: reward,
+          },
         },
-      },
-    });
+      });
 
-    return completedMission;
-  },
-);
+      return completedMission;
+    },
+  );
 
   return {
     userMissionId: updated.userMissionId,

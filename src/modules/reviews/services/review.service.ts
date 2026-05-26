@@ -3,6 +3,7 @@ import { CreateReviewResponse } from "../dtos/review.response.dto.js";
 
 import {
   addReview,
+  addReviewImages,
   checkReview,
   getReviewsByUserId,
 } from "../repositories/review.repository.js";
@@ -23,6 +24,7 @@ export const createReviewService = async (
     userMissionId,
     rating,
     content,
+    imageUrls,
   } = data;
 
   validateRequired(userId, "userId 필요");
@@ -65,6 +67,13 @@ export const createReviewService = async (
     rating,
     content,
   });
+
+  if (imageUrls?.length) {
+    await addReviewImages(
+      review.reviewId,
+      imageUrls,
+    );
+  }
 
   return {
     reviewId: review.reviewId,
