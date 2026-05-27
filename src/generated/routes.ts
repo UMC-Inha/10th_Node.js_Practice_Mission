@@ -32,7 +32,7 @@ const models: TsoaRoute.Models = {
             "role": {"dataType":"string","required":true},
             "name": {"dataType":"string","required":true},
             "gender": {"dataType":"string","required":true},
-            "birth": {"dataType":"datetime","required":true},
+            "birth": {"dataType":"union","subSchemas":[{"dataType":"datetime"},{"dataType":"enum","enums":[null]}],"required":true},
             "address": {"dataType":"string","required":true},
             "city": {"dataType":"string","required":true},
             "district": {"dataType":"string","required":true},
@@ -77,7 +77,7 @@ const models: TsoaRoute.Models = {
             "password": {"dataType":"string","required":true},
             "name": {"dataType":"string","required":true},
             "gender": {"dataType":"string","required":true},
-            "birth": {"dataType":"string","required":true},
+            "birth": {"dataType":"string"},
             "address": {"dataType":"string"},
             "city": {"dataType":"string"},
             "district": {"dataType":"string"},
@@ -85,6 +85,22 @@ const models: TsoaRoute.Models = {
             "detail": {"dataType":"string"},
             "phoneNumber": {"dataType":"string","required":true},
             "preferences": {"dataType":"array","array":{"dataType":"refAlias","ref":"FoodType"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateMyInfoRequest": {
+        "dataType": "refObject",
+        "properties": {
+            "gender": {"dataType":"string"},
+            "birth": {"dataType":"string"},
+            "address": {"dataType":"string"},
+            "city": {"dataType":"string"},
+            "district": {"dataType":"string"},
+            "neighborhood": {"dataType":"string"},
+            "detail": {"dataType":"string"},
+            "phoneNumber": {"dataType":"string"},
+            "preferences": {"dataType":"array","array":{"dataType":"refAlias","ref":"FoodType"}},
         },
         "additionalProperties": false,
     },
@@ -319,6 +335,37 @@ export function RegisterRoutes(app: Router) {
                 next,
                 validatedArgs,
                 successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsUserController_handleUpdateMyInfo: Record<string, TsoaRoute.ParameterSchema> = {
+                userId: {"in":"path","name":"userId","required":true,"dataType":"double"},
+                body: {"in":"body","name":"body","required":true,"ref":"UpdateMyInfoRequest"},
+        };
+        app.put('/users/:userId',
+            ...(fetchMiddlewares<RequestHandler>(UserController)),
+            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleUpdateMyInfo)),
+
+            async function UserController_handleUpdateMyInfo(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleUpdateMyInfo, request, response });
+
+                const controller = new UserController();
+
+              await templateService.apiHandler({
+                methodName: 'handleUpdateMyInfo',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
               });
             } catch (err) {
                 return next(err);

@@ -29,7 +29,7 @@ export interface UserSignUpResponse {
   /**
    * 생년월일
    */
-  birth: Date;
+  birth: Date | null;
 
   /**
    * 주소

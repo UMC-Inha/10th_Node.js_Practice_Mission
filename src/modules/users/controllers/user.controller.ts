@@ -1,8 +1,8 @@
-import { Body, Controller, Post, Route, Tags, SuccessResponse, Response } from "tsoa";
+import { Body, Controller, Post, Route, Tags, SuccessResponse, Response, Put, Path } from "tsoa";
 import { StatusCodes } from "http-status-codes";
 
-import { UserSignUpRequest } from "../dtos/user.request.dto.js";
-import { userSignUp } from "../services/user.service.js";
+import { UpdateMyInfoRequest, UserSignUpRequest } from "../dtos/user.request.dto.js";
+import { updateMyInfo, userSignUp } from "../services/user.service.js";
 
 import { ApiResponse } from "../../../common/responses/api.response.js";
 import { UserSignUpResponse } from "../dtos/user.response.dto.js";
@@ -45,6 +45,30 @@ export class UserController extends Controller {
     return ApiResponse.success(
       StatusCodes.CREATED,
       "회원가입 성공",
+      user,
+    );
+  }
+
+  /**
+   * 내 정보 수정 API
+   */
+  @SuccessResponse(StatusCodes.OK, "회원 정보 수정 성공")
+  @Response<ApiResponse<null>>(400, "잘못된 요청")
+  @Response<ApiResponse<null>>(404, "유저 없음")
+  @Response<ApiResponse<null>>(500, "서버 내부 오류")
+  @Put("{userId}")
+  public async handleUpdateMyInfo(
+    @Path() userId: number,
+    @Body() body: UpdateMyInfoRequest,
+  ): Promise<ApiResponse<UserSignUpResponse>> {
+
+    const user = await updateMyInfo(userId, body);
+
+    this.setStatus(StatusCodes.OK);
+
+    return ApiResponse.success(
+      StatusCodes.OK,
+      "회원 정보 수정 성공",
       user,
     );
   }

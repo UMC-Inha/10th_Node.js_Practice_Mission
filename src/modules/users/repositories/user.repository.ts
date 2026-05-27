@@ -5,11 +5,11 @@ interface AddUserParams {
   email: string;
   password: string;
   name: string;
-  gender: string;
-  birth: Date;
-  address: string;
-  detailAddress: string;
-  phoneNumber: string;
+  gender?: string;
+  birth?: Date;
+  address?: string;
+  detailAddress?: string;
+  phoneNumber?: string;
 }
 
 // 이메일로 사용자 조회
@@ -62,5 +62,27 @@ export const getUserPreferencesByUserId = async (
   return await prisma.userPreference.findMany({
     where: { userId },
     orderBy: { foodType: "asc" },
+  });
+};
+
+interface UpdateUserParams {
+  gender?: string;
+  birth?: Date;
+  address?: string;
+  city?: string;
+  district?: string;
+  neighborhood?: string;
+  detail?: string;
+  phoneNumber?: string;
+}
+
+// 사용자 정보 수정
+export const updateUser = async (
+  userId: number,
+  data: UpdateUserParams,
+) => {
+  return await prisma.user.update({
+    where: { userId },
+    data,
   });
 };

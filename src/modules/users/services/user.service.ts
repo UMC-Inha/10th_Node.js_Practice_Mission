@@ -7,9 +7,10 @@ import {
   getUserByEmail,
   getUserPreferencesByUserId,
   setPreference,
+  updateUser,
 } from "../repositories/user.repository.js";
 
-import { UserSignUpRequest } from "../dtos/user.request.dto.js";
+import { UpdateMyInfoRequest, UserSignUpRequest } from "../dtos/user.request.dto.js";
 import { UserSignUpResponse } from "../dtos/user.response.dto.js";
 
 export const userSignUp = async (
@@ -37,7 +38,9 @@ export const userSignUp = async (
     password: hashedPassword,
     name: data.name,
     gender: data.gender,
-    birth: new Date(data.birth),
+    birth: data.birth
+      ? new Date(data.birth)
+      : undefined,
     address: data.address ?? "",
     detailAddress: data.detail ?? "",
     phoneNumber: data.phoneNumber,
@@ -67,7 +70,7 @@ export const userSignUp = async (
     userId: user.userId,
     role: user.role,
     name: user.name,
-    gender: user.gender,
+    gender: user.gender ?? "",
     birth: user.birth,
 
     address: user.address ?? "",
@@ -76,10 +79,65 @@ export const userSignUp = async (
     neighborhood: user.neighborhood ?? "",
     detail: user.detail ?? "",
 
-    phoneNumber: user.phoneNumber,
+    phoneNumber: user.phoneNumber ?? "",
     point: user.point,
     createdAt: user.createdAt,
 
     preferences: preferences.map((p) => p.foodType),
+  };
+};
+
+// 정보 수정
+export const updateMyInfo = async (
+  userId: number,
+  data: UpdateMyInfoRequest,
+): Promise<UserSignUpResponse> => {
+
+  await updateUser(userId, {
+    gender: data.gender,
+
+    birth: data.birth
+      ? new Date(data.birth)
+      : undefined,
+
+    address: data.address,
+    city: data.city,
+    district: data.district,
+    neighborhood: data.neighborhood,
+    detail: data.detail,
+    phoneNumber: data.phoneNumber,
+  });
+
+  const user = await getUser(userId);
+
+  if (!user) {
+    throw new CustomError(404, "유저 없음");
+  }
+
+  const preferences =
+    await getUserPreferencesByUserId(userId);
+
+  return {
+    userId: user.userId,
+    role: user.role,
+    name: user.name,
+
+    gender: user.gender ?? "",
+    birth: user.birth,
+
+    address: user.address ?? "",
+    city: user.city ?? "",
+    district: user.district ?? "",
+    neighborhood: user.neighborhood ?? "",
+    detail: user.detail ?? "",
+
+    phoneNumber: user.phoneNumber ?? "",
+
+    point: user.point,
+    createdAt: user.createdAt,
+
+    preferences: preferences.map(
+      (p) => p.foodType,
+    ),
   };
 };
