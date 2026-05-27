@@ -1,20 +1,14 @@
 import dotenv from "dotenv";
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import path from "path";
+import fs from "fs";
 
-import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
-import { handleCreateStore } from "./modules/stores/controllers/store.controller.js";
-import {
-  handleCreateReview,
-  handleListMyReviews,
-} from "./modules/reviews/controllers/review.controller.js";
-import {
-  handleCreateMission,
-  handleChallengeMission,
-  handleListStoreMissions,
-  handleListInProgressMissions,
-  handleCompleteMission,
-} from "./modules/missions/controllers/mission.controller.js";
+import { RegisterRoutes } from "./generated/routes.js";
+import { AppError } from "./common/errors/app.error.js";
 
 dotenv.config();
 
@@ -25,6 +19,8 @@ const port = process.env.PORT || 3000;
  * 공통 미들웨어 설정
  */
 app.use(cors());
+app.use(morgan("dev"));
+app.use(cookieParser());
 app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -36,34 +32,31 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World! This is TypeScript Server!");
 });
 
-app.post("/api/v1/users/signup", handleUserSignUp);
+/**
+ * Tsoa가 자동 생성한 routes 등록
+ */
+const router = express.Router();
 
-app.post("/api/v1/regions/:regionId/stores", handleCreateStore);
+RegisterRoutes(router);
 
-app.post("/api/v1/stores/:storeId/reviews", handleCreateReview);
-
-app.get("/api/v1/users/:userId/reviews", handleListMyReviews);
-
-app.post("/api/v1/stores/:storeId/missions", handleCreateMission);
-app.get("/api/v1/stores/:storeId/missions", handleListStoreMissions);
-app.get(
-  "/api/v1/users/:userId/missions/in-progress",
-  handleListInProgressMissions
-);
-app.patch(
-  "/api/v1/users/:userId/missions/:missionId/complete",
-  handleCompleteMission
-);
-app.post("/api/v1/missions/:missionId/challenge", handleChallengeMission);
+app.use("/api/v1", router);
 
 /**
- * 공통 에러 처리 미들웨어
+ * 전역 에러 핸들러
  */
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error("에러 발생:", err.message);
+app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(err);
+  }
 
-  res.status(400).json({
-    error: err.message,
+  res.status(err.statusCode || 500).json({
+    resultType: "FAIL",
+    error: {
+      errorCode: err.errorCode || "UNKNOWN",
+      reason: err.message || "서버 오류가 발생했습니다.",
+      data: err.data || null,
+    },
+    success: null,
   });
 });
 
@@ -73,3 +66,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
+
+const swaggerFile = JSON.parse(
+  fs.readFileSync(path.resolve("dist/swagger.json"), "utf8")
+);
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
