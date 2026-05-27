@@ -8,5 +8,10 @@
   },
   "routes": {
     "routesDir": "src/generated"
+  },
+  "auth": {
+    "jwt": {
+      "authHeader": "authorization"
+    }
   }
 }
