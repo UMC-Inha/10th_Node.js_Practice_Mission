@@ -1,6 +1,12 @@
 import dotenv from "dotenv";
-import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  Profile,
+} from "passport-google-oauth20";
+
+import { Strategy as GitHubStrategy } from "passport-github2";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+
 import jwt from "jsonwebtoken";
 import { prisma } from "./db.config.js"; // Prisma 설정 파일 경로 확인 필요
 
@@ -89,6 +95,68 @@ export const googleStrategy = new GoogleStrategy(
       return cb(err as Error);
     }
   }
+);
+
+// Github Verify 로직
+const githubVerify = async (profile: any) => {
+  const email =
+    profile.emails?.[0]?.value ||
+    `${profile.username}@github.com`;
+
+  let user = await prisma.user.findFirst({
+    where: { email },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        password: "GITHUB_LOGIN_USER",
+        name: profile.displayName || profile.username,
+
+        gender: "추후 수정",
+        birth: new Date("1970-01-01"),
+        phoneNumber: "추후 수정",
+
+        address: "추후 수정",
+        city: "추후 수정",
+        district: "추후 수정",
+        neighborhood: "추후 수정",
+        detail: "추후 수정",
+      },
+    });
+  }
+
+  return {
+    userId: user.userId,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  };
+};
+
+// Github Strategy
+export const githubStrategy = new GitHubStrategy(
+  {
+    clientID: process.env.GITHUB_CLIENT_ID!,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    callbackURL: "/oauth2/callback/github",
+    scope: ["user:email"],
+  },
+  async (_accessToken: string, _refreshToken: string, profile: any, cb: any) => {
+    try {
+      const user = await githubVerify(profile);
+
+      const tokens = {
+        accessToken: generateAccessToken(user),
+        refreshToken: generateRefreshToken(user),
+      };
+
+      return cb(null, tokens);
+    } catch (err) {
+      return cb(err as Error);
+    }
+  },
 );
 
 // JWT 검증 미들웨어

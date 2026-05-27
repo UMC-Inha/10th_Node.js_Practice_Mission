@@ -8,13 +8,14 @@ import fs from "fs";
 
 import { RegisterRoutes } from "./generated/routes.js";
 import passport from "passport";
-import { googleStrategy, jwtStrategy } from "./auth.config.js";
+import { googleStrategy, githubStrategy, jwtStrategy } from "./auth.config.js";
 import { ApiResponse } from "./common/responses/api.response.js";
 
 // 환경 변수 설정
 dotenv.config();
 
 passport.use(googleStrategy);
+passport.use(githubStrategy); 
 passport.use(jwtStrategy);
 
 const app: Express = express();
