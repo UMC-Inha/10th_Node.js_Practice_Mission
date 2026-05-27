@@ -1,4 +1,4 @@
-import { Body, Controller, Path, Post, Route, Tags, SuccessResponse, Response, Get } from "tsoa";
+import { Body, Controller, Path, Post, Route, Tags, SuccessResponse, Response, Get, Security } from "tsoa";
 
 import { 
   createMissionService,
@@ -18,20 +18,21 @@ export class MissionController extends Controller {
    *
    * 특정 가게에 새로운 미션을 생성합니다.
    */
+  @Security("jwt")
   @SuccessResponse(
-    201, 
+    201,
     "미션 생성 성공",
   )
   @Response<ApiResponse<null>>(
-    400, 
+    400,
     "잘못된 요청",
   )
   @Response<ApiResponse<null>>(
-    404, 
+    404,
     "가게를 찾을 수 없음",
   )
   @Response<ApiResponse<null>>(
-    500, 
+    500,
     "서버 내부 오류",
   )
   @Post("{storeId}")
@@ -65,15 +66,15 @@ export class MissionController extends Controller {
    * 특정 가게의 미션 목록을 조회합니다.
    */
   @SuccessResponse(
-    200, 
+    200,
     "가게 미션 조회 성공",
   )
   @Response<ApiResponse<null>>(
-    404, 
+    404,
     "가게를 찾을 수 없음",
   )
   @Response<ApiResponse<null>>(
-    500, 
+    500,
     "서버 내부 오류",
   )
   @Get("{storeId}")

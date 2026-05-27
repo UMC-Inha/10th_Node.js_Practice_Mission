@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Route, Tags, SuccessResponse, Response } from "tsoa";
+import { Body, Controller, Post, Route, Tags, SuccessResponse, Response, Security } from "tsoa";
 import { StatusCodes } from "http-status-codes";
 
 import { createStoreService } from "../services/store.service.js";
@@ -16,6 +16,7 @@ export class StoreController extends Controller {
    *
    * 새로운 가게 정보를 등록합니다.
    */
+  @Security("jwt")
   @SuccessResponse(
     StatusCodes.CREATED,
     "가게 생성 성공",

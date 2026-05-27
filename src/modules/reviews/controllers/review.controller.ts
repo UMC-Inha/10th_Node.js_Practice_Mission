@@ -1,5 +1,4 @@
-import { Body, Controller, Path, Post, Route, Tags, SuccessResponse, Response, Get } from "tsoa";
-import { StatusCodes } from "http-status-codes";
+import { Body, Controller, Post, Route, Tags, SuccessResponse, Response, Get, Security, Request } from "tsoa";
 
 import { 
   createReviewService, 
@@ -19,8 +18,9 @@ export class ReviewController extends Controller {
    *
    * 사용자가 수행한 미션에 대한 리뷰를 작성합니다.
    */
+  @Security("jwt")
   @SuccessResponse(
-    StatusCodes.CREATED,
+    201,
     "리뷰 작성 성공",
   )
   @Response<ApiResponse<null>>(
@@ -41,12 +41,18 @@ export class ReviewController extends Controller {
   )
   @Post()
   public async createReview(
+    @Request() req: any,
     @Body() body: CreateReviewRequest,
   ): Promise<ApiResponse<CreateReviewResponse>> {
 
-    const result = await createReviewService(body);
+    const userId = req.user.userId;
 
-    this.setStatus(StatusCodes.CREATED);
+    const result = await createReviewService({
+      ...body,
+      userId,
+    });
+
+    this.setStatus(201);
 
     return ApiResponse.success(
       201,
@@ -60,8 +66,9 @@ export class ReviewController extends Controller {
    *
    * 특정 사용자가 작성한 리뷰 목록을 조회합니다.
    */
+  @Security("jwt")
   @SuccessResponse(
-    StatusCodes.OK,
+    200,
     "내 리뷰 조회 성공",
   )
   @Response<ApiResponse<null>>(
@@ -72,20 +79,16 @@ export class ReviewController extends Controller {
     500,
     "서버 내부 오류",
   )
-  @Get("{userId}")
+  @Get("me")
   public async getMyReviews(
-
-    /**
-     * 사용자 ID
-     * @example 1
-     */
-    @Path() userId: number,
-
+    @Request() req: any,
   ): Promise<ApiResponse<CreateReviewResponse[]>> {
+
+    const userId = req.user.userId;
 
     const result = await getMyReviewsService(userId);
 
-    this.setStatus(StatusCodes.OK);
+    this.setStatus(200);
 
     return ApiResponse.success(
       200,
