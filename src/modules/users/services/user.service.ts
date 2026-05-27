@@ -44,6 +44,7 @@ export const userSignUp = async (
     address: data.address ?? "",
     detailAddress: data.detail ?? "",
     phoneNumber: data.phoneNumber,
+    provider: "local",
   });
 
   // 2. 선호 저장

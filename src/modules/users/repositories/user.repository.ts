@@ -10,6 +10,7 @@ interface AddUserParams {
   address?: string;
   detailAddress?: string;
   phoneNumber?: string;
+  provider?: string;
 }
 
 // 이메일로 사용자 조회
@@ -31,6 +32,7 @@ export const addUser = async (data: AddUserParams) => {
       address: data.address,
       detail: data.detailAddress,
       phoneNumber: data.phoneNumber,
+      provider: data.provider ?? "local",
     },
   });
 };
@@ -65,6 +67,7 @@ export const getUserPreferencesByUserId = async (
   });
 };
 
+// 사용자 정보 수정
 interface UpdateUserParams {
   gender?: string;
   birth?: Date;
@@ -76,7 +79,6 @@ interface UpdateUserParams {
   phoneNumber?: string;
 }
 
-// 사용자 정보 수정
 export const updateUser = async (
   userId: number,
   data: UpdateUserParams,

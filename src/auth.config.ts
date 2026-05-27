@@ -6,6 +6,8 @@ import {
 
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcrypt";
 
 import jwt from "jsonwebtoken";
 import { prisma } from "./db.config.js"; // Prisma 설정 파일 경로 확인 필요
@@ -173,4 +175,33 @@ export const jwtStrategy = new JwtStrategy(
       return done(err, false);
     }
   }
+);
+
+// 로컬 strategy
+export const localStrategy = new LocalStrategy(
+  {
+    usernameField: "email",
+    passwordField: "password",
+  },
+  async (email, password, done) => {
+    try {
+      const user = await prisma.user.findFirst({
+        where: { email },
+      });
+
+      if (!user) {
+        return done(null, false, { message: "존재하지 않는 유저" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return done(null, false, { message: "비밀번호 불일치" });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  },
 );
