@@ -11,6 +11,7 @@ import bcrypt from "bcrypt";
 
 import jwt from "jsonwebtoken";
 import { prisma } from "./db.config.js"; // Prisma 설정 파일 경로 확인 필요
+import { CustomError } from "./common/errors/custom.error.js";
 
 dotenv.config();
 
@@ -44,13 +45,33 @@ export const generateRefreshToken = (user: {
 // 2. Google Verify 로직 
 const googleVerify = async (profile: Profile) => {
   const email = profile.emails?.[0]?.value;
-  if (!email) throw new Error("Google 프로필에 이메일이 없습니다.");
+
+  if (!email) {
+      throw new CustomError(
+        400,
+        "Google 프로필에 이메일이 없습니다.",
+        "GOOGLE_EMAIL_REQUIRED",
+      );
+    }
 
   let user = await prisma.user.findFirst({ where: { email } });
 
-   if (!user) {
+  if (
+    user &&
+    user.provider !== "google"
+  ) {
+
+    throw new CustomError(
+      403,
+      `${user.provider} 로그인만 가능합니다.`,
+      "INVALID_LOGIN_PROVIDER",
+    );
+  }
+
+  if (!user) {
     user = await prisma.user.create({
       data: {
+        provider: "google",
         email,
         password: "GOOGLE_LOGIN_USER",
         name: profile.displayName,
@@ -82,7 +103,7 @@ export const googleStrategy = new GoogleStrategy(
   {
     clientID: process.env.PASSPORT_GOOGLE_CLIENT_ID!,
     clientSecret: process.env.PASSPORT_GOOGLE_CLIENT_SECRET!,
-    callbackURL: "/oauth2/callback/google",
+    callbackURL: "auth/google/callback",
     scope: ["email", "profile"],
   },
   async (_accessToken, _refreshToken, profile, cb) => {
@@ -105,13 +126,24 @@ const githubVerify = async (profile: any) => {
     profile.emails?.[0]?.value ||
     `${profile.username}@github.com`;
 
-  let user = await prisma.user.findFirst({
-    where: { email },
-  });
+  let user = await prisma.user.findFirst({where: { email }});
+
+  if (
+      user &&
+      user.provider !== "github"
+    ) {
+
+      throw new CustomError(
+        403,
+        `${user.provider} 로그인만 가능합니다.`,
+        "INVALID_LOGIN_PROVIDER",
+      );
+    }
 
   if (!user) {
     user = await prisma.user.create({
       data: {
+        provider: "github",
         email,
         password: "GITHUB_LOGIN_USER",
         name: profile.displayName || profile.username,
@@ -142,7 +174,7 @@ export const githubStrategy = new GitHubStrategy(
   {
     clientID: process.env.GITHUB_CLIENT_ID!,
     clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    callbackURL: "/oauth2/callback/github",
+    callbackURL: "auth/github/callback",
     scope: ["user:email"],
   },
   async (_accessToken: string, _refreshToken: string, profile: any, cb: any) => {
@@ -177,7 +209,53 @@ export const jwtStrategy = new JwtStrategy(
   }
 );
 
-// 로컬 strategy
+// Local Verify 로직
+const localVerify = async (
+  email: string,
+  password: string
+) => {
+  const user = await prisma.user.findFirst({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new CustomError(
+      404,
+      "존재하지 않는 유저입니다.",
+      "USER_NOT_FOUND",
+    );
+  }
+
+  if (user.provider !== "local") {
+    throw new CustomError(
+      403,
+      `${user.provider} 로그인만 가능합니다.`,
+      "INVALID_LOGIN_PROVIDER",
+    );
+  }
+
+  const isMatch = await bcrypt.compare(
+    password,
+    user.password
+  );
+
+  if (!isMatch) {
+    throw new CustomError(
+      401,
+      "비밀번호가 일치하지 않습니다.",
+      "INVALID_PASSWORD",
+    );
+  }
+
+  return {
+    userId: user.userId,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  };
+};
+
+// local strategy
 export const localStrategy = new LocalStrategy(
   {
     usernameField: "email",
@@ -185,23 +263,19 @@ export const localStrategy = new LocalStrategy(
   },
   async (email, password, done) => {
     try {
-      const user = await prisma.user.findFirst({
-        where: { email },
-      });
+      const user = await localVerify(
+        email,
+        password
+      );
 
-      if (!user) {
-        return done(null, false, { message: "존재하지 않는 유저" });
-      }
+      const tokens = {
+        accessToken: generateAccessToken(user),
+        refreshToken: generateRefreshToken(user),
+      };
 
-      const isMatch = await bcrypt.compare(password, user.password);
-
-      if (!isMatch) {
-        return done(null, false, { message: "비밀번호 불일치" });
-      }
-
-      return done(null, user);
+      return done(null, tokens);
     } catch (err) {
-      return done(err);
+      return done(err as Error);
     }
   },
 );
