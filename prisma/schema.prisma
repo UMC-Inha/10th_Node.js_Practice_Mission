@@ -297,6 +297,7 @@ enum user_social_type {
   NAVER
   APPLE
   GOOGLE
+  LOCAL
 }
 
 enum user_role {

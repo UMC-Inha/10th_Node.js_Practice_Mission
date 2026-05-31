@@ -40,6 +40,36 @@ export const generateRefreshToken = (user: { id: bigint }) => {
   });
 };
 
+const socialTypeLabel = (type: user_social_type | null): string => {
+  switch (type) {
+    case user_social_type.GOOGLE:
+      return 'Google';
+    case user_social_type.NAVER:
+      return '네이버';
+    // case user_social_type.KAKAO:
+    //   return '카카오';
+    // case user_social_type.APPLE:
+    //   return 'Apple';
+    case user_social_type.LOCAL:
+      return '이메일/비밀번호';
+    default:
+      return 'default';
+  }
+};
+
+const assertSignUpMethod = (
+  registered: user_social_type | null,
+  attempted: user_social_type,
+): void => {
+  if (registered !== attempted) {
+    throw new AppError(
+      USER_ERROR_CODE.SIGNUP_METHOD_MISMATCH,
+      `이미 ${socialTypeLabel(registered)} 방식으로 가입된 이메일입니다. ${socialTypeLabel(registered)} 로그인을 이용해주세요.`,
+      StatusCodes.CONFLICT,
+    );
+  }
+};
+
 const googleVerify = async (profile: Profile): Promise<AuthUser> => {
   const email = profile.emails?.[0]?.value;
   if (!email) throw new Error('Google 프로필에 이메일이 없습니다.');
@@ -62,6 +92,8 @@ const googleVerify = async (profile: Profile): Promise<AuthUser> => {
         created_at: new Date(),
       },
     });
+  } else {
+    assertSignUpMethod(user.social_type, user_social_type.GOOGLE);
   }
 
   return { id: user.id, email: user.email, name: user.nickname };
@@ -117,6 +149,8 @@ const naverVerify = async (profile: NaverProfile): Promise<AuthUser> => {
         created_at: new Date(),
       },
     });
+  } else {
+    assertSignUpMethod(user.social_type, user_social_type.NAVER);
   }
 
   return { id: user.id, email: user.email, name: user.nickname };
@@ -185,6 +219,7 @@ export const localSignUp = async (
       gender: user_gender.NONE,
       birth: new Date(1970, 0, 1),
       social_id: `local:${input.email}`,
+      social_type: user_social_type.LOCAL,
       created_at: new Date(),
     },
   });
@@ -198,7 +233,16 @@ const localVerify = async (
 ): Promise<AuthUser> => {
   const user = await prisma.user.findFirst({ where: { email } });
 
-  if (!user || !user.password) {
+  if (!user) {
+    throw new AppError(
+      USER_ERROR_CODE.INVALID_CREDENTIALS,
+      '이메일 또는 비밀번호가 올바르지 않습니다.',
+      StatusCodes.UNAUTHORIZED,
+    );
+  }
+
+  if (user.social_type !== user_social_type.LOCAL || !user.password) {
+    assertSignUpMethod(user.social_type, user_social_type.LOCAL);
     throw new AppError(
       USER_ERROR_CODE.INVALID_CREDENTIALS,
       '이메일 또는 비밀번호가 올바르지 않습니다.',
