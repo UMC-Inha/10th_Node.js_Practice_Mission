@@ -1,4 +1,5 @@
 import { UserSignUpRequest } from '../dtos/userSignUpRequest.dto';
+import { UserUpdateProfileData } from '../dtos/userUpdateProfileRequest.dto';
 
 export type UserProfile = {
   id: bigint;
@@ -27,4 +28,12 @@ export abstract class UserRepositoryInterface {
   abstract getUserPreferencesByUserId(
     userId: bigint,
   ): Promise<UserPreferenceRow[]>;
+  abstract updateUser(
+    userId: bigint,
+    data: Omit<UserUpdateProfileData, 'preferences'>,
+  ): Promise<void>;
+  abstract replacePreferences(
+    userId: bigint,
+    foodCategoryIds: bigint[],
+  ): Promise<void>;
 }
