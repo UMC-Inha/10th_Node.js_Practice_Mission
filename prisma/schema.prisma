@@ -175,6 +175,7 @@ model user {
   gender                                      user_gender
   birth                                       DateTime?            @db.DateTime(0)
   email                                       String               @db.VarChar(255)
+  password                                    String?              @db.VarChar(255)
   social_id                                   String               @db.VarChar(255)
   social_type                                 user_social_type?
   phone_number                                String?              @db.Char(11)
